@@ -1,0 +1,57 @@
+<html>
+<body>
+<script>
+
+leftElement = document.createElement("button");
+rightElement = document.createElement("button");
+leftElement.value = "go left!";
+rightElement.value = "go right!";
+
+document.body.append(leftElement);
+document.body.append(rightElement);
+
+wordDict = ["dictionary","for","foreach","if","currentPosition","randomItem",".push","[i]",".style."];
+
+mapElement = document.createElement("div");
+mapElement.style.fontFamily = "Monaco"
+mapElement.style.fontSize = "40px"
+
+mapVar = []
+displayMapVar = []
+
+for(let i = 0; i < 100; i++){
+    mapVar.push([]);
+    for(let j = 0; j < 100; j++){
+        mapVar[i].push("X");
+    }
+}
+
+
+
+for(let i = 0; i < 5; i++){
+    displayMapVar.push([]);
+    for(let j = 0; j < 5; j++){
+        displayMapVar.push("");
+    }
+}
+
+for(let i = 0; i < displayMapVar.length; i++) {
+
+}
+
+currentPosition = {x: 0, y: 0};
+
+displayMap = () => {
+    for(let xx = currentPosition.x - 2; xx <= currentPosition.y - 2; xx++){
+        for(let yy = currentPosition.y - 2; yy <= currentPosition.y - 2; yy++){
+            if(xx < 0 || yy < 0) displayMapVar[xx - currentPosition.x + 2][yy - currentPosition.y + 2] = "8";
+            if(xx >= 100 || yy >= 100) displayMapVar[xx - currentPosition.x + 2][yy - currentPosition.y + 2] = "8";
+            else displayMapVar[xx - currentPosition.x + 2][yy - currentPosition.y + 2] = mapVar[xx][yy];
+        }
+    }
+}
+
+
+</script>
+</body>
+</html>
