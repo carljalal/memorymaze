@@ -3,6 +3,26 @@
 <script>
 
 
+wordDict = ["dictionary","for","foreach","if","currentPosition","randomItem",".push","[i]",".style."];
+checkPlaces = [];
+
+
+
+basicRandom = (min,max) => {
+    Math.floor(Math.random() * (max-min+1)) + min;
+}
+
+
+addCheckPlace = () => {
+    let randx = ;
+    let randy = ;
+    checkPlaces.push({x:1,y:2});
+}
+
+
+
+
+
 
 pickupElement = document.createElement("button");
 upElement = document.createElement("button");
@@ -47,7 +67,6 @@ checkElement.innerHTML = "check!";
 document.body.append(leftElement);
 document.body.append(rightElement);
 
-wordDict = ["dictionary","for","foreach","if","currentPosition","randomItem",".push","[i]",".style."];
 
 mapElement = document.createElement("div");
 mapElement.style.fontFamily = "Andale Mono"
