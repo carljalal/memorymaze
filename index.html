@@ -12,6 +12,10 @@ basicRandom = (min,max) => {
     Math.floor(Math.random() * (max-min+1)) + min;
 }
 
+randomItem = (dict) => {
+    return dict[basicRandom(0,dict.length - 1)];
+}
+
 
 addCheckPlace = () => {
     let randx = basicRandom(0,99);
