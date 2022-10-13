@@ -2,10 +2,47 @@
 <body>
 <script>
 
+
+
+pickupElement = document.createElement("button");
+upElement = document.createElement("button");
+downElement = document.createElement("button")
+putdownElement = document.createElement("button")
+initElement = document.createElement("button")
+questionElement = document.createElement("div")
+answerElement = document.createElement("textarea")
+historyElement = document.createElement("div")
+hintElement = document.createElement("div")
+
+pickupElement.innerHTML = "pick up"
+upElement.innerHTML = "go up!"
+downElement.innerHTML = "go down!"
+putdownElement.innerHTML = "put down"
+initElement.innerHTML = "init"
+questionElement.innerHTML = "question goes here";
+historyElement.innerHTML = "";
+hintElement.innerHTML = "";
+
+document.body.append(pickupElement)
+document.body.append(upElement)
+document.body.append(downElement)
+document.body.append(putdownElement)
+document.body.append(initElement)
+document.body.append(questionElement)
+document.body.append(hintElement)
+document.body.append(historyElement)
+
 leftElement = document.createElement("button");
 rightElement = document.createElement("button");
-leftElement.value = "go left!";
-rightElement.value = "go right!";
+leftElement.innerHTML = "go left!";
+rightElement.innerHTML = "go right!";
+
+insideElement = document.createElement("div");
+document.body.append(insideElement);
+
+checkElement = document.createElement("button");
+document.body.append(checkElement);
+checkElement.innerHTML = "check!";
 
 document.body.append(leftElement);
 document.body.append(rightElement);
@@ -13,8 +50,10 @@ document.body.append(rightElement);
 wordDict = ["dictionary","for","foreach","if","currentPosition","randomItem",".push","[i]",".style."];
 
 mapElement = document.createElement("div");
-mapElement.style.fontFamily = "Monaco"
+mapElement.style.fontFamily = "Andale Mono"
 mapElement.style.fontSize = "40px"
+mapElement.style.whiteSpace = "pre-line";
+document.body.append(mapElement);
 
 mapVar = []
 displayMapVar = []
@@ -31,24 +70,48 @@ for(let i = 0; i < 100; i++){
 for(let i = 0; i < 5; i++){
     displayMapVar.push([]);
     for(let j = 0; j < 5; j++){
-        displayMapVar.push("");
+        displayMapVar[i].push("");
     }
 }
 
-for(let i = 0; i < displayMapVar.length; i++) {
-
-}
 
 currentPosition = {x: 0, y: 0};
 
 displayMap = () => {
-    for(let xx = currentPosition.x - 2; xx <= currentPosition.y - 2; xx++){
-        for(let yy = currentPosition.y - 2; yy <= currentPosition.y - 2; yy++){
+    for(let xx = currentPosition.x - 2; xx <= currentPosition.x + 2; xx++){
+        for(let yy = currentPosition.y - 2; yy <= currentPosition.y + 2; yy++){
             if(xx < 0 || yy < 0) displayMapVar[xx - currentPosition.x + 2][yy - currentPosition.y + 2] = "8";
-            if(xx >= 100 || yy >= 100) displayMapVar[xx - currentPosition.x + 2][yy - currentPosition.y + 2] = "8";
+            else if(xx >= 100 || yy >= 100) displayMapVar[xx - currentPosition.x + 2][yy - currentPosition.y + 2] = "8";
             else displayMapVar[xx - currentPosition.x + 2][yy - currentPosition.y + 2] = mapVar[xx][yy];
         }
     }
+    mapElement.textContent = "";
+    for(let yy = 0; yy < 5; yy++){
+        for(let xx = 0; xx < 5; xx++){
+            mapElement.textContent += displayMapVar[xx][yy];
+            mapElement.textContent += " ";
+        }
+        if (yy < 4) mapElement.textContent += "\r\n";
+    }
+}
+
+
+leftElement.onclick = () => {
+    if(currentPosition.x > 0)currentPosition.x--;
+    displayMap();
+}
+rightElement.onclick = () => {
+    if(currentPosition.x < 99)currentPosition.x++;
+    displayMap();
+
+}
+upElement.onclick = () => {
+    if(currentPosition.y > 0)currentPosition.y--;
+    displayMap();
+}
+downElement.onclick = () => {
+    if(currentPosition.y < 99)currentPosition.y++;
+    displayMap();
 }
 
 
