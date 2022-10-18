@@ -10,7 +10,8 @@ lastCheckPlace = {};
 currentTargetPlaceIndex = 0;
 mapBoundX = 10;
 mapBoundY = 10;
-
+noTyping = true;
+allowDuplicates = false;
 
 
 
@@ -45,31 +46,41 @@ addCheckPlace = () => {
     let found = false;
     for(let i = 0; i <= 1000; i++){
         randWord = randomItem(wordDict);
-        found = false;
+        let found = false;
         for(let j = 0; j < checkPlaces.length; j++){
             if(checkPlaces[j].word == randWord) {
                 found = true;
                 break;
             }
         }
-        if(found == false) break;
+        if (found == false) {
+            // unique
+            lastCheckPlace = {x:randx,y:randy,word:randWord};
+            checkPlaces.push(lastCheckPlace);
+            return;
+        }
     }
     // if it's a repeat after 1000 times, still add one
-    lastCheckPlace = {x:randx,y:randy,word:randWord};
-    checkPlaces.push(lastCheckPlace);
-    
+    if (allowDuplicates == true){
+        lastCheckPlace = {x:randx,y:randy,word:randWord};
+        checkPlaces.push(lastCheckPlace);
+        feedbackElement.innerHTML = "we're on duplicates now";
+    }
 }
 
-
+scoreElement = document.createElement("div");
+document.body.append(scoreElement);
 
 mapElement = document.createElement("div");
 mapElement.style.fontFamily = "Andale Mono"
-mapElement.style.fontSize = "40px"
+mapElement.style.fontSize = "50px"
+mapElement.style.border = "5px solid"
 mapElement.style.whiteSpace = "pre-line";
 document.body.append(mapElement);
 
-
-
+brElement = document.createElement("div")
+document.body.append(brElement)
+brElement.innerHTML = "<br>"
 
 leftElement = document.createElement("button");
 rightElement = document.createElement("button");
@@ -120,7 +131,7 @@ document.body.append(insideElement);
 
 checkElement.innerHTML = "check!";
 
-answerElement.value = "write list here (each word on new line)"
+answerElement.placeholder = "write list here (each word/phrase separated by a new line)"
 answerElement.cols = 50
 answerElement.rows = 10
 
@@ -130,11 +141,15 @@ hideShowNonInitButtons = (state) => {
     downElement.style.display = state
     leftElement.style.display = state
     rightElement.style.display = state
-    pickupElement.style.display = state
-    putdownElement.style.display = state
+    //pickupElement.style.display = state
+    //putdownElement.style.display = state
 }
 
 hideShowNonInitButtons("none");
+
+// add these buttons later
+pickupElement.style.display = "none"
+putdownElement.style.display = "none"
 
 mapVar = []
 displayMapVar = []
@@ -170,10 +185,10 @@ isInsideCheckPlaces = (word) => {
 
 checkElement.onclick = () => {
     correct = false;
-    if(isInsideCheckPlaces(answerElement.value)){
+    if(isInsideCheckPlaces(answerElement.value) || noTyping == true){
         if(currentPosition.x == checkPlaces[currentTargetPlaceIndex].x 
         && currentPosition.y == checkPlaces[currentTargetPlaceIndex].y){
-            if(basicRandom(0,3)==0) addCheckPlace();
+            if(basicRandom(0,6)==0) addCheckPlace();
             newQuestion();
             correct = true;
         }
@@ -187,7 +202,14 @@ checkElement.onclick = () => {
     }
 }
 
-
+refreshMapStyle = () => {
+    mapElement.style.fontFamily = "Andale Mono"
+    mapElement.style.fontSize = "50px"
+    mapElement.style.border = "5px solid orange"
+    mapElement.style.flexWrap = "wrap"
+    mapElement.style.whiteSpace = "pre-line";
+    mapElement.style.display = "inline-block"
+}
 
 
 
@@ -230,6 +252,7 @@ displayMap = () => {
         if (yy < 4) tempText+= "<br>";
     }
     mapElement.innerHTML = tempText;
+    refreshMapStyle();
 }
 
 
@@ -252,8 +275,13 @@ downElement.onclick = () => {
 }
 
 newQuestion = () => {
-    currentTargetPlaceIndex = basicRandom(0,checkPlaces.length-1)
+    let lastTargetPlace = currentTargetPlaceIndex;
+    for (let i = 0; i < 1000; i++){
+        currentTargetPlaceIndex = basicRandom(0,checkPlaces.length-1)
+        if(currentTargetPlaceIndex != lastTargetPlace) break;
+    }
     questionElement.innerHTML = "go to " + checkPlaces[currentTargetPlaceIndex].word;
+    
 }
 
 removeItemAll = (arr, value) => {
@@ -269,7 +297,10 @@ removeItemAll = (arr, value) => {
 }
 
 initElement.onclick = () => {
+    answerElement.placeholder = "type here and hit check!"
     hideShowNonInitButtons("");
+    refreshMapStyle();
+    if (noTyping == true) answerElement.style.display = "none"
     initElement.style.display = "none"
 
     wordListString = answerElement.value
