@@ -256,21 +256,33 @@ displayMap = () => {
 }
 
 
+isWalkable = (x,y) => {
+    if(x < 0) return false;
+    if(x >= mapBoundX) return false;
+    if(y < 0) return false;
+    if(y >= mapBoundY) return false;
+    if(mapVar[x][y] == "Z"){
+        return false;
+    }
+    return true;
+}
+
+
 leftElement.onclick = () => {
-    if(currentPosition.x > 0) currentPosition.x--;
+    if(isWalkable(currentPosition.x-1,currentPosition.y)) currentPosition.x--;
     displayMap();
 }
 rightElement.onclick = () => {
-    if(currentPosition.x < mapBoundX-1) currentPosition.x++;
+    if(isWalkable(currentPosition.x+1,currentPosition.y)) currentPosition.x++;
     displayMap();
 
 }
 upElement.onclick = () => {
-    if(currentPosition.y > 0) currentPosition.y--;
+    if(isWalkable(currentPosition.x,currentPosition.y-1)) currentPosition.y--;
     displayMap();
 }
 downElement.onclick = () => {
-    if(currentPosition.y < mapBoundY-1) currentPosition.y++;
+    if(isWalkable(currentPosition.x,currentPosition.y+1)) currentPosition.y++;
     displayMap();
 }
 
@@ -294,6 +306,20 @@ removeItemAll = (arr, value) => {
     }
   }
   return arr;
+}
+
+
+setMapVar = () => {
+    for(let i = 0; i < mapBoundX; i++){
+        mapVar.push([]);
+        for(let j = 0; j < mapBoundY; j++){
+            mapVar[i].push("X");
+        }
+    }
+}
+
+wallAlgorithm = () => {
+
 }
 
 initElement.onclick = () => {
@@ -322,12 +348,7 @@ initElement.onclick = () => {
     mapVar = []
     displayMapVar = []
 
-    for(let i = 0; i < mapBoundX; i++){
-        mapVar.push([]);
-        for(let j = 0; j < mapBoundY; j++){
-            mapVar[i].push("X");
-        }
-    }
+    setMapVar();
 
 
 
