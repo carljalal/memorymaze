@@ -318,8 +318,51 @@ setMapVar = () => {
     }
 }
 
-wallAlgorithm = () => {
+goodWall = (x,y) => {
+    wallcheck = [["","",""],["","",""],["","",""]];
+    for(let xcheck = -1; xcheck <=1; xcheck++){
+        for(let ycheck = -1; ycheck <=1; ycheck++){
+            if(x + xcheck < 0 || x + xcheck > mapBoundX) wallcheck[xcheck+1][ycheck+1] = "Z";
+            else if(y + ycheck < 0 || y + ycheck > mapBoundY) wallcheck[xcheck+1][ycheck+1] = "Z";
+            else {
+                wallcheck[xcheck+1][ycheck+1] = mapVar[x+xcheck][y+ycheck];
+            }
+        }
+    }
+    if(wallcheck[1][0] == "Z") {
+        if(wallcheck[0][2] == "Z" || wallcheck[1][2] == "Z" || wallcheck[2][2] == "Z" ||){
+            return false;
+        }
+    }
+    if(wallcheck[0][1] == "Z") {
+        if(wallcheck[2][0] == "Z" || wallcheck[2][1] == "Z" || wallcheck[2][2] == "Z" ||){
+            return false;
+        }
+    }
+    if(wallcheck[1][2] == "Z") {
+        if(wallcheck[0][0] == "Z" || wallcheck[1][0] == "Z" || wallcheck[2][0] == "Z" ||){
+            return false;
+        }
+    }
+    if(wallcheck[2][1] == "Z") {
+        if(wallcheck[0][0] == "Z" || wallcheck[0][1] == "Z" || wallcheck[0][2] == "Z" ||){
+            return false;
+        }
+    }
+    return true;
+}
 
+wallAlgorithm = () => {
+    let walls = [];
+    for ( let i = 0; i < 1000; i ++){
+        let x = basicRandom(0,mapBoundX);
+        let y = basicRandom(0,mapBoundY);
+        if(goodWall(x,y)) {
+            mapVar[x][y] = "Z";
+        }
+    }
+    
+    
 }
 
 initElement.onclick = () => {
@@ -350,7 +393,7 @@ initElement.onclick = () => {
 
     setMapVar();
 
-
+    wallAlgorithm();
 
     for(let i = 0; i < 5; i++){
         displayMapVar.push([]);
