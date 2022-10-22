@@ -329,23 +329,24 @@ goodWall = (x,y) => {
             }
         }
     }
-    if(wallcheck[1][0] == "Z") {
-        if(wallcheck[0][2] == "Z" || wallcheck[1][2] == "Z" || wallcheck[2][2] == "Z" ||){
+    if(wallcheck[1][1] == "Z") return false; 
+    if(wallcheck[1][0] == "Z" || wallcheck[0][0] == "Z" || wallcheck[2][0] == "Z") {
+        if(wallcheck[0][2] == "Z" || wallcheck[1][2] == "Z" || wallcheck[2][2] == "Z" ){
             return false;
         }
     }
-    if(wallcheck[0][1] == "Z") {
-        if(wallcheck[2][0] == "Z" || wallcheck[2][1] == "Z" || wallcheck[2][2] == "Z" ||){
+    if(wallcheck[0][1] == "Z" || wallcheck[0][0] == "Z" || wallcheck[0][2] == "Z") {
+        if(wallcheck[2][0] == "Z" || wallcheck[2][1] == "Z" || wallcheck[2][2] == "Z" ){
             return false;
         }
     }
-    if(wallcheck[1][2] == "Z") {
-        if(wallcheck[0][0] == "Z" || wallcheck[1][0] == "Z" || wallcheck[2][0] == "Z" ||){
+    if(wallcheck[1][2] == "Z" || wallcheck[0][2] == "Z" || wallcheck[2][2] == "Z") {
+        if(wallcheck[0][0] == "Z" || wallcheck[1][0] == "Z" || wallcheck[2][0] == "Z" ){
             return false;
         }
     }
-    if(wallcheck[2][1] == "Z") {
-        if(wallcheck[0][0] == "Z" || wallcheck[0][1] == "Z" || wallcheck[0][2] == "Z" ||){
+    if(wallcheck[2][1] == "Z" || wallcheck[2][0] == "Z" || wallcheck[2][2] == "Z") {
+        if(wallcheck[0][0] == "Z" || wallcheck[0][1] == "Z" || wallcheck[0][2] == "Z" ){
             return false;
         }
     }
@@ -355,13 +356,12 @@ goodWall = (x,y) => {
 wallAlgorithm = () => {
     let walls = [];
     for ( let i = 0; i < 1000; i ++){
-        let x = basicRandom(0,mapBoundX);
-        let y = basicRandom(0,mapBoundY);
+        let x = basicRandom(0,mapBoundX-1);
+        let y = basicRandom(0,mapBoundY-1);
         if(goodWall(x,y)) {
             mapVar[x][y] = "Z";
         }
     }
-    
     
 }
 
