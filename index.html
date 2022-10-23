@@ -95,6 +95,7 @@ historyElement = document.createElement("div")
 hintElement = document.createElement("div")
 feedbackElement = document.createElement("div")
 checkElement = document.createElement("button");
+scoreElement = document.createElement("div");
 
 pickupElement.innerHTML = "pick up"
 upElement.innerHTML = "go up!"
@@ -120,6 +121,7 @@ document.body.append(hintElement)
 document.body.append(historyElement)
 document.body.append(answerElement)
 document.body.append(feedbackElement)
+document.body.append(scoreElement)
 
 
 leftElement.innerHTML = "go left!";
@@ -134,6 +136,11 @@ checkElement.innerHTML = "check!";
 answerElement.placeholder = "write list here (each word/phrase separated by a new line)"
 answerElement.cols = 50
 answerElement.rows = 10
+
+let numCorrect = 0;
+let numSteps = 0;
+
+
 
 hideShowNonInitButtons = (state) => {
     checkElement.style.display = state
@@ -199,6 +206,7 @@ checkElement.onclick = () => {
     }
     else {
         feedbackElement.innerHTML = "you got it!"
+        numCorrect++;
     }
 }
 
@@ -209,6 +217,16 @@ refreshMapStyle = () => {
     mapElement.style.flexWrap = "wrap"
     mapElement.style.whiteSpace = "pre-line";
     mapElement.style.display = "inline-block"
+}
+
+refreshScore = () => {
+    let text = "";
+    text += "<br>num correct: " + numCorrect;
+    text += "<br>num steps: " + numSteps;
+    text += "<br>correct/steps ratio: " + numCorrect / numSteps;
+    text += "<br>words in use: " + checkPlaces.length;
+    text += "<br>total words: " + wordDict.length;
+    scoreElement.innerHTML = text;
 }
 
 
@@ -253,6 +271,7 @@ displayMap = () => {
     }
     mapElement.innerHTML = tempText;
     refreshMapStyle();
+    refreshScore();
 }
 
 
@@ -269,21 +288,37 @@ isWalkable = (x,y) => {
 
 
 leftElement.onclick = () => {
-    if(isWalkable(currentPosition.x-1,currentPosition.y)) currentPosition.x--;
-    displayMap();
+    if(isWalkable(currentPosition.x-1,currentPosition.y)) {
+        currentPosition.x--;
+        numSteps++;
+        displayMap();
+
+    }
 }
 rightElement.onclick = () => {
-    if(isWalkable(currentPosition.x+1,currentPosition.y)) currentPosition.x++;
-    displayMap();
+    if(isWalkable(currentPosition.x+1,currentPosition.y)) {
+        currentPosition.x++;
+        numSteps++;
+        displayMap();
+
+    }
 
 }
 upElement.onclick = () => {
-    if(isWalkable(currentPosition.x,currentPosition.y-1)) currentPosition.y--;
-    displayMap();
+    if(isWalkable(currentPosition.x,currentPosition.y-1)) {
+        currentPosition.y--;
+        numSteps++;
+        displayMap();
+
+    }
 }
 downElement.onclick = () => {
-    if(isWalkable(currentPosition.x,currentPosition.y+1)) currentPosition.y++;
-    displayMap();
+    if(isWalkable(currentPosition.x,currentPosition.y+1)) {
+        currentPosition.y++;
+        numSteps++;
+        displayMap();
+
+    }
 }
 
 newQuestion = () => {
@@ -309,6 +344,7 @@ removeItemAll = (arr, value) => {
 }
 
 
+
 setMapVar = () => {
     for(let i = 0; i < mapBoundX; i++){
         mapVar.push([]);
@@ -318,12 +354,14 @@ setMapVar = () => {
     }
 }
 
+
+
 goodWall = (x,y) => {
     wallcheck = [["","",""],["","",""],["","",""]];
     for(let xcheck = -1; xcheck <=1; xcheck++){
         for(let ycheck = -1; ycheck <=1; ycheck++){
-            if(x + xcheck < 0 || x + xcheck > mapBoundX) wallcheck[xcheck+1][ycheck+1] = "Z";
-            else if(y + ycheck < 0 || y + ycheck > mapBoundY) wallcheck[xcheck+1][ycheck+1] = "Z";
+            if(x + xcheck < 0 || x + xcheck >= mapBoundX) wallcheck[xcheck+1][ycheck+1] = "Z";
+            else if(y + ycheck < 0 || y + ycheck >= mapBoundY) wallcheck[xcheck+1][ycheck+1] = "Z";
             else {
                 wallcheck[xcheck+1][ycheck+1] = mapVar[x+xcheck][y+ycheck];
             }
@@ -353,14 +391,44 @@ goodWall = (x,y) => {
     return true;
 }
 
+let walls = [];
+
+makeWallAny = () => {
+    let x = basicRandom(0,mapBoundX-1);
+    let y = basicRandom(0,mapBoundY-1);
+    if(goodWall(x,y)) {
+        mapVar[x][y] = "Z";
+        walls.push({x:x,y:y});
+    }
+}
+
+makeWallNearby = () => {
+    r = basicRandom(0,walls.length-1);
+    x = walls[r].x + basicRandom(-1,1);
+    y = walls[r].y + basicRandom(-1,1);
+    if(goodWall(x,y)) {
+        mapVar[x][y] = "Z";
+        walls.push({x:x,y:y});
+    }
+}
+
+
 wallAlgorithm = () => {
-    let walls = [];
+    
+    makeWallAny();
     for ( let i = 0; i < 1000; i ++){
-        let x = basicRandom(0,mapBoundX-1);
-        let y = basicRandom(0,mapBoundY-1);
-        if(goodWall(x,y)) {
-            mapVar[x][y] = "Z";
+        let r = basicRandom(0,10);
+        if(r==0){
+            makeWallAny();
         }
+        else {
+            makeWallNearby();
+        }
+
+        
+
+
+
     }
     
 }
