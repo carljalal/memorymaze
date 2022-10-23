@@ -8,8 +8,8 @@ wordDict = [];
 checkPlaces = [];
 lastCheckPlace = {};
 currentTargetPlaceIndex = 0;
-mapBoundX = 10;
-mapBoundY = 10;
+mapBoundX = 20;
+mapBoundY = 20;
 noTyping = true;
 allowDuplicates = false;
 
@@ -207,6 +207,7 @@ checkElement.onclick = () => {
     else {
         feedbackElement.innerHTML = "you got it!"
         numCorrect++;
+        refreshScore();
     }
 }
 
@@ -287,38 +288,60 @@ isWalkable = (x,y) => {
 }
 
 
-leftElement.onclick = () => {
+moveLeft = () => {
     if(isWalkable(currentPosition.x-1,currentPosition.y)) {
         currentPosition.x--;
         numSteps++;
         displayMap();
-
     }
 }
-rightElement.onclick = () => {
+
+moveRight = () => {
     if(isWalkable(currentPosition.x+1,currentPosition.y)) {
         currentPosition.x++;
         numSteps++;
         displayMap();
-
     }
-
 }
-upElement.onclick = () => {
+
+moveUp = () => {
     if(isWalkable(currentPosition.x,currentPosition.y-1)) {
         currentPosition.y--;
         numSteps++;
         displayMap();
-
     }
 }
-downElement.onclick = () => {
+
+moveDown = () => {
     if(isWalkable(currentPosition.x,currentPosition.y+1)) {
         currentPosition.y++;
         numSteps++;
         displayMap();
-
     }
+}
+
+mapElement.addEventListener("pointerdown",(event) => {
+    let rect = mapElement.getBoundingClientRect();
+    let midx = (rect.left + rect.right)/2.0;
+    let midy = (rect.top + rect.bottom)/2.0;
+    if(event.x > midx + 20 && event.y < midy + 50 && event.y > midy - 50) moveRight();
+    if(event.x < midx - 20 && event.y < midy + 50 && event.y > midy - 50) moveLeft();
+    if(event.y > midy + 20 && event.x < midx + 50 && event.x > midx - 50) moveDown();
+    if(event.y < midy - 20 && event.x < midx + 50 && event.x > midx - 50) moveUp();
+})
+
+
+leftElement.onclick = () => {
+    moveLeft();
+}
+rightElement.onclick = () => {
+    moveRight();
+}
+upElement.onclick = () => {
+    moveUp();
+}
+downElement.onclick = () => {
+    moveDown();
 }
 
 newQuestion = () => {
