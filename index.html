@@ -12,7 +12,7 @@ mapBoundX = 20;
 mapBoundY = 20;
 noTyping = true;
 allowDuplicates = false;
-allowWallOverwrite = false;
+preventWallOverwrite = true;
 emptyChar = "&#160";
 centerChar = "X";
 itemChar = "O";
@@ -47,7 +47,7 @@ randomItemDifferent = (dict,unmatch) => {
 addCheckPlace = () => {
     let randx = basicRandom(0,mapBoundX-1);
     let randy = basicRandom(0,mapBoundY-1);
-    if(allowWallOverwrite){
+    if(preventWallOverwrite){
         for(let i = 0; i <= 1000; i++){
             if(mapVar[randx][randy] != "Z") break;
             let randx = basicRandom(0,mapBoundX-1);
