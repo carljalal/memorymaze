@@ -19,6 +19,7 @@ itemChar = "O";
 wallChar = "Z";
 oobChar = "8";
 allowDiagonals = false;
+let sessionStarted = false;
 
 
 basicRandom = (min,max) => {
@@ -202,7 +203,7 @@ isInsideCheckPlaces = (word) => {
 
 
 
-checkElement.onclick = () => {
+checkAnswer = () => {
     correct = false;
     if(isInsideCheckPlaces(answerElement.value) || noTyping == true){
         if(currentPosition.x == checkPlaces[currentTargetPlaceIndex].x 
@@ -222,6 +223,8 @@ checkElement.onclick = () => {
         refreshScore();
     }
 }
+
+checkElement.onclick = checkAnswer;
 
 refreshMapStyle = () => {
     mapElement.style.fontFamily = "Courier New";
@@ -446,8 +449,12 @@ goodWallPure = (x,y) => {
     for(let xcheck = -1; xcheck <=1; xcheck++){
         for(let ycheck = -1; ycheck <=1; ycheck++){
             // is pt within bounds
-            if(x + xcheck >= 0 || x + xcheck < mapBoundX) {
-                if(y + ycheck >= 0 || y + ycheck < mapBoundY) {
+            if(x + xcheck >= 0 && x + xcheck < mapBoundX) {
+                if(y + ycheck >= 0 && y + ycheck < mapBoundY) {
+                    //let s = " " + (x) + " " + (y);
+                    //console.log(s)
+                    //s = " " + (x+xcheck) + " " + (y+ycheck);
+                    //console.log(s)
                     if(mapVar[x+xcheck][y+ycheck] == "Z") return false; 
                 }
             }
@@ -509,6 +516,7 @@ wallAlgorithm = () => {
 }
 
 initElement.onclick = () => {
+    sessionStarted = true;
     answerElement.placeholder = "type here and hit check!"
     hideShowNonInitButtons("");
     refreshMapStyle();
@@ -553,6 +561,25 @@ initElement.onclick = () => {
     
 }
 
+mapElement.addEventListener("keydown", (event)=>{
+    if(event.key == "Enter" && sessionStarted) checkAnswer(); 
+})
+
+mapElement.addEventListener("keydown", (event)=>{
+    if(event.key == "ArrowUp" && sessionStarted) moveUp(); 
+})
+
+mapElement.addEventListener("keydown", (event)=>{
+    if(event.key == "ArrowDown" && sessionStarted) moveDown(); 
+})
+
+mapElement.addEventListener("keydown", (event)=>{
+    if(event.key == "ArrowUp" && sessionStarted) moveUp(); 
+})
+
+mapElement.addEventListener("keydown", (event)=>{
+    if(event.key == "ArrowUp" && sessionStarted) moveUp(); 
+})
 
 
 
