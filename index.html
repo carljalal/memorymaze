@@ -36,7 +36,7 @@ randomItemDifferent = (dict,unmatch) => {
         if (randomWord != unmatch) return randomWord;
     }
     return randomWord;
-    feedbackElement.innerHTML = "we're on duplicates now";
+    feedbackElement.textContent = "we're on duplicates now";
 }
 
 
@@ -77,7 +77,7 @@ addCheckPlace = () => {
     if (allowDuplicates == true){
         lastCheckPlace = {x:randx,y:randy,word:randWord};
         checkPlaces.push(lastCheckPlace);
-        feedbackElement.innerHTML = "we're on duplicates now";
+        feedbackElement.textContent = "we're on duplicates now";
     }
 }
 
@@ -100,10 +100,16 @@ downElement = document.createElement("button")
 putdownElement = document.createElement("button")
 initElement = document.createElement("button")
 questionElement = document.createElement("div")
+
+questionElement.style.fontFamily = "Verdana";
+questionElement.style.fontSize = "20px"
 answerElement = document.createElement("textarea")
 historyElement = document.createElement("div")
 hintElement = document.createElement("div")
-feedbackElement = document.createElement("div")
+feedbackElement = document.createElement("div");
+feedbackElement.style.fontFamily = "Verdana";
+feedbackElement.style.fontSize = "10px";
+
 checkElement = document.createElement("button");
 scoreElement = document.createElement("div");
 
@@ -130,6 +136,7 @@ document.body.append(questionElement)
 
 
 insideElement = document.createElement("div");
+insideElement.style.fontStyle = "italic";
 document.body.append(insideElement);
 
 document.body.append(hintElement)
@@ -215,10 +222,10 @@ checkAnswer = () => {
     }
     answerElement.value = ""
     if(correct==false) {
-        feedbackElement.innerHTML = "error"
+        feedbackElement.textContent = "error"
     }
     else {
-        feedbackElement.innerHTML = "you got it!"
+        feedbackElement.textContent = "you got it!"
         numCorrect++;
         refreshScore();
     }
@@ -240,18 +247,20 @@ mapElement.style.display = "none";
 
 refreshScore = () => {
     let text = "";
-    text += "<br>num correct: " + numCorrect;
+    text += "<br><br><br>num correct: " + numCorrect;
     text += "<br>num steps: " + numSteps;
     text += "<br>correct/steps ratio: " + numCorrect / numSteps;
     text += "<br>words in use: " + checkPlaces.length;
     text += "<br>total words: " + wordDict.length;
     scoreElement.innerHTML = text;
+    scoreElement.style.fontFamily = "Verdana";
+    scoreElement.style.fontSize = "10px";
 }
 
 
 
 displayMap = () => {
-    feedbackElement.innerHTML = ""
+    feedbackElement.textContent = ""
     insideElement.innerHTML = "words inside:<br>";
     for(let checkPlaceIdx = 0; checkPlaceIdx < checkPlaces.length; checkPlaceIdx++){
         if(currentPosition.x == checkPlaces[checkPlaceIdx].x && currentPosition.y == checkPlaces[checkPlaceIdx].y){
