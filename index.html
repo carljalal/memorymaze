@@ -16,7 +16,8 @@ allowWallOverwrite = false;
 emptySpace = " ";
 centerChar = "X";
 itemChar = "O";
-
+wallChar = "Z";
+oobChar = "8";
 
 
 basicRandom = (min,max) => {
@@ -45,7 +46,7 @@ addCheckPlace = () => {
     let randx = basicRandom(0,mapBoundX-1);
     let randy = basicRandom(0,mapBoundY-1);
     if(allowWallOverwrite){
-    for(let i = 0; i <= 1000; i++){
+        for(let i = 0; i <= 1000; i++){
             if(mapVar[randx][randy] != "Z") break;
             let randx = basicRandom(0,mapBoundX-1);
             let randy = basicRandom(0,mapBoundY-1);
@@ -82,6 +83,7 @@ scoreElement = document.createElement("div");
 document.body.append(scoreElement);
 
 mapElement = document.createElement("div");
+mapElement.style.display = "none";
 document.body.append(mapElement);
 
 brElement = document.createElement("div")
@@ -230,6 +232,7 @@ refreshMapStyle = () => {
     mapElement.style.userSelect = "none";
 }
 refreshMapStyle();
+mapElement.style.display = "none";
 
 refreshScore = () => {
     let text = "";
@@ -270,12 +273,23 @@ displayMap = () => {
     let tempText = "";
     for(let yy = 0; yy < 5; yy++){
         for(let xx = 0; xx < 5; xx++){
+            let center = false;
             if(xx == 2 && yy == 2) {
+                center = true;
+            }
+            if(center) {
                 tempText+= "<span style=\"font-weight:bold;color:aqua\">";
             }
-            tempText += displayMapVar[xx][yy];
+            let c = displayMapVar[xx][yy];
+
+            if (c == "Z") tempText += wallChar;
+            if (c == "8") tempText += oobChar;
+            if (c == "O" && !center) tempText += itemChar;
+            if (c == "X" && !center) tempText += emptyChar;
+            if (center) tempText += centerChar;
+            
             tempText += " ";
-            if(xx == 2 && yy == 2) {
+            if(center) {
                 tempText+= "</span>"
             }
         }
@@ -484,7 +498,7 @@ initElement.onclick = () => {
     answerElement.cols = 50
     answerElement.rows = 1
 
-    mapElement.style.border = "3px orange"
+    mapElement.style.display = ""
 
     
     checkPlaces = [];
