@@ -50,8 +50,8 @@ addCheckPlace = () => {
     if(preventWallOverwrite){
         for(let i = 0; i <= 1000; i++){
             if(mapVar[randx][randy] != "Z") break;
-            let randx = basicRandom(0,mapBoundX-1);
-            let randy = basicRandom(0,mapBoundY-1);
+            randx = basicRandom(0,mapBoundX-1);
+            randy = basicRandom(0,mapBoundY-1);
         }
     }
     randWord = "";
