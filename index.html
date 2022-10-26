@@ -13,7 +13,7 @@ mapBoundY = 20;
 noTyping = true;
 allowDuplicates = false;
 allowWallOverwrite = false;
-emptyChar = " ";
+emptyChar = "&#160";
 centerChar = "X";
 itemChar = "O";
 wallChar = "Z";
@@ -446,8 +446,8 @@ goodWallPure = (x,y) => {
     for(let xcheck = -1; xcheck <=1; xcheck++){
         for(let ycheck = -1; ycheck <=1; ycheck++){
             // is pt within bounds
-            if(x + xcheck < 0 || x + xcheck >= mapBoundX) {
-                if(y + ycheck < 0 || y + ycheck >= mapBoundY) {
+            if(x + xcheck >= 0 || x + xcheck < mapBoundX) {
+                if(y + ycheck >= 0 || y + ycheck < mapBoundY) {
                     if(mapVar[x+xcheck][y+ycheck] == "Z") return false; 
                 }
             }
@@ -472,7 +472,12 @@ makeWallNearby = () => {
     let r = basicRandom(0,walls.length-1);
     let x = walls[r].x;
     let y = walls[r].y;
-    if(!allowDiagonals){
+
+    if(allowDiagonals){
+        x = walls[r].x + basicRandom(-1,1);
+        y = walls[r].y + basicRandom(-1,1);
+    }
+    else{
         if(basicRandom(0,1)==0){
             x+=basicRandom(-1,1);
         }
@@ -480,10 +485,7 @@ makeWallNearby = () => {
             y+=basicRandom(-1,1);
         }
     }
-    else {
-        x = walls[r].x + basicRandom(-1,1);
-        y = walls[r].y + basicRandom(-1,1);
-    }
+    
     if(goodWall(x,y)) {
         mapVar[x][y] = "Z";
         walls.push({x:x,y:y});
@@ -502,11 +504,6 @@ wallAlgorithm = () => {
         else {
             makeWallNearby();
         }
-
-        
-
-
-
     }
     
 }
