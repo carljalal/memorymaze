@@ -18,6 +18,7 @@ centerChar = "X";
 itemChar = "O";
 wallChar = "Z";
 oobChar = "8";
+allowDiagonals = false;
 
 
 basicRandom = (min,max) => {
@@ -439,21 +440,50 @@ goodWall = (x,y) => {
     return true;
 }
 
+goodWallPure = (x,y) => {
+    if(x < 0 || x >= mapBoundX || y < 0 || y >= mapBoundY) return false;
+    wallcheck = [["","",""],["","",""],["","",""]];
+    for(let xcheck = -1; xcheck <=1; xcheck++){
+        for(let ycheck = -1; ycheck <=1; ycheck++){
+            // is pt within bounds
+            if(x + xcheck < 0 || x + xcheck >= mapBoundX) {
+                if(y + ycheck < 0 || y + ycheck >= mapBoundY) {
+                    if(mapVar[x+xcheck][y+ycheck] == "Z") return false; 
+                }
+            }
+        }
+    }
+    return true;
+}
+
+
 let walls = [];
 
 makeWallAny = () => {
     let x = basicRandom(0,mapBoundX-1);
     let y = basicRandom(0,mapBoundY-1);
-    if(goodWall(x,y)) {
+    if(goodWallPure(x,y)) {
         mapVar[x][y] = "Z";
         walls.push({x:x,y:y});
     }
 }
 
 makeWallNearby = () => {
-    r = basicRandom(0,walls.length-1);
-    x = walls[r].x + basicRandom(-1,1);
-    y = walls[r].y + basicRandom(-1,1);
+    let r = basicRandom(0,walls.length-1);
+    let x = walls[r].x;
+    let y = walls[y].y;
+    if(!allowDiagonals){
+        if(basicRandom(0,1)==0){
+            x+=basicRandom(-1,1);
+        }
+        else {
+            y+=basicRandom(-1,1);
+        }
+    }
+    else {
+        x = walls[r].x + basicRandom(-1,1);
+        y = walls[r].y + basicRandom(-1,1);
+    }
     if(goodWall(x,y)) {
         mapVar[x][y] = "Z";
         walls.push({x:x,y:y});
