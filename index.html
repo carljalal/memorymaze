@@ -563,24 +563,11 @@ initElement.onclick = () => {
 
 mapElement.addEventListener("keydown", (event)=>{
     if(event.key == "Enter" && sessionStarted) checkAnswer(); 
-})
-
-mapElement.addEventListener("keydown", (event)=>{
     if(event.key == "ArrowUp" && sessionStarted) moveUp(); 
-})
-
-mapElement.addEventListener("keydown", (event)=>{
     if(event.key == "ArrowDown" && sessionStarted) moveDown(); 
-})
-
-mapElement.addEventListener("keydown", (event)=>{
     if(event.key == "ArrowLeft" && sessionStarted) moveLeft(); 
-})
-
-mapElement.addEventListener("keydown", (event)=>{
     if(event.key == "ArrowRight" && sessionStarted) moveRight(); 
 })
-
 
 
 </script>
