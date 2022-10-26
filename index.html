@@ -13,7 +13,9 @@ mapBoundY = 20;
 noTyping = true;
 allowDuplicates = false;
 allowWallOverwrite = false;
-
+emptySpace = " ";
+centerChar = "X";
+itemChar = "O";
 
 
 
@@ -80,10 +82,6 @@ scoreElement = document.createElement("div");
 document.body.append(scoreElement);
 
 mapElement = document.createElement("div");
-mapElement.style.fontFamily = "Andale Mono"
-mapElement.style.fontSize = "50px"
-mapElement.style.border = "5px solid"
-mapElement.style.whiteSpace = "pre-line";
 document.body.append(mapElement);
 
 brElement = document.createElement("div")
@@ -116,15 +114,20 @@ hintElement.innerHTML = "";
 
 
 document.body.append(checkElement);
-document.body.append(upElement)
-document.body.append(downElement)
-document.body.append(leftElement);
-document.body.append(rightElement);
+//document.body.append(upElement)
+//document.body.append(downElement)
+//document.body.append(leftElement);
+//document.body.append(rightElement);
 document.body.append(pickupElement)
 document.body.append(putdownElement)
 document.body.append(initElement)
 
 document.body.append(questionElement)
+
+
+insideElement = document.createElement("div");
+document.body.append(insideElement);
+
 document.body.append(hintElement)
 document.body.append(historyElement)
 document.body.append(answerElement)
@@ -135,8 +138,6 @@ document.body.append(scoreElement)
 leftElement.innerHTML = "go left!";
 rightElement.innerHTML = "go right!";
 
-insideElement = document.createElement("div");
-document.body.append(insideElement);
 
 
 checkElement.innerHTML = "check!";
