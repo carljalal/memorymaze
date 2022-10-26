@@ -561,7 +561,7 @@ initElement.onclick = () => {
     
 }
 
-mapElement.addEventListener("keydown", (event)=>{
+document.body.addEventListener("keydown", (event)=>{
     if(event.key == "Enter" && sessionStarted) checkAnswer(); 
     if(event.key == "ArrowUp" && sessionStarted) moveUp(); 
     if(event.key == "ArrowDown" && sessionStarted) moveDown(); 
