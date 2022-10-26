@@ -212,13 +212,15 @@ checkElement.onclick = () => {
 }
 
 refreshMapStyle = () => {
-    mapElement.style.fontFamily = "Andale Mono"
+    mapElement.style.fontFamily = "Courier New";
     mapElement.style.fontSize = "50px"
     mapElement.style.border = "5px solid orange"
     mapElement.style.flexWrap = "wrap"
     mapElement.style.whiteSpace = "pre-line";
-    mapElement.style.display = "inline-block"
+    mapElement.style.display = "inline-block";
+    mapElement.style.userSelect = "none";
 }
+refreshMapStyle();
 
 refreshScore = () => {
     let text = "";
