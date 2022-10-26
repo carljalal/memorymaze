@@ -471,7 +471,7 @@ makeWallAny = () => {
 makeWallNearby = () => {
     let r = basicRandom(0,walls.length-1);
     let x = walls[r].x;
-    let y = walls[y].y;
+    let y = walls[r].y;
     if(!allowDiagonals){
         if(basicRandom(0,1)==0){
             x+=basicRandom(-1,1);
