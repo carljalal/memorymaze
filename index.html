@@ -20,6 +20,12 @@ wallChar = "Z";
 oobChar = "8";
 allowDiagonals = false;
 let sessionStarted = false;
+let startTime = 0.0;
+let lastTime = 0.0;
+let currentTime = 0.0;
+let averageTime = 0.0;
+let answerTime = 0.0;
+let totalTime = 0.0;
 
 
 basicRandom = (min,max) => {
@@ -227,6 +233,11 @@ checkAnswer = () => {
     else {
         feedbackElement.textContent = "you got it!"
         numCorrect++;
+        currentTime = performance.now();
+        answerTime = currentTime - lastTime;
+        totalTime = currentTime - startTime;
+        averageTime = totalTime / numCorrect;
+        lastTime = currentTime;
         refreshScore();
     }
 }
@@ -249,7 +260,9 @@ refreshScore = () => {
     let text = "";
     text += "<br><br><br>num correct: " + numCorrect;
     text += "<br>num steps: " + numSteps;
-    text += "<br>correct/steps ratio: " + numCorrect / numSteps;
+    text += "<br>average steps per question: " + (numsteps / numCorrect).toPrecision(4);
+    text += "<br>time for last question: " + (answerTime/1000.0).toPrecision(4) + "s";
+    text += "<br>average time per question: " + (averageTime/1000.0).toPrecision(4) + "s";
     text += "<br>words in use: " + checkPlaces.length;
     text += "<br>total words: " + wordDict.length;
     scoreElement.innerHTML = text;
@@ -526,6 +539,8 @@ wallAlgorithm = () => {
 
 initElement.onclick = () => {
     sessionStarted = true;
+    startTime = performance.now();
+    lastTime = startTime;
     answerElement.placeholder = "type here and hit check!"
     hideShowNonInitButtons("");
     refreshMapStyle();
