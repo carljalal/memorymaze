@@ -7,9 +7,9 @@ body {touch-action: manipulation;}
 <body>
 <script>
 
-document.ondblclick = function(e) {
-    e.preventDefault();
-}
+document.addEventListener('dblclick', function(event) {
+    event.preventDefault();
+}, { passive: false });
 
 
 //wordDict = ["dictionary","for","foreach","if","currentPosition","randomItem",".push","[i]",".style."];
