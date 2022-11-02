@@ -9,6 +9,7 @@ textarea {touch-action: manipulation;}
 <body>
 <script>
 
+
 document.body.addEventListener('dblclick', function(event) {
     event.preventDefault();
 }, { passive: false });
@@ -104,6 +105,11 @@ document.body.append(scoreElement);
 mapElement = document.createElement("div");
 mapElement.style.display = "none";
 document.body.append(mapElement);
+
+document.mapElement.addEventListener('dblclick', function(event) {
+    event.preventDefault();
+}, { passive: false });
+
 
 brElement = document.createElement("div")
 document.body.append(brElement)
