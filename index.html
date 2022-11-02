@@ -106,7 +106,7 @@ mapElement = document.createElement("div");
 mapElement.style.display = "none";
 document.body.append(mapElement);
 
-document.mapElement.addEventListener('dblclick', function(event) {
+mapElement.addEventListener('dblclick', function(event) {
     event.preventDefault();
 }, { passive: false });
 
