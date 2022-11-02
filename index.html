@@ -278,7 +278,7 @@ refreshScore = () => {
     let text = "";
     text += "<br><br><br>num correct: " + numCorrect;
     text += "<br>num steps: " + numSteps;
-    text += "<br>average steps per question: " + (numsteps / numCorrect).toPrecision(4);
+    text += "<br>average steps per question: " + (numSteps / numCorrect).toPrecision(4);
     text += "<br>time for last question: " + (answerTime/1000.0).toPrecision(4) + "s";
     text += "<br>average time per question: " + (averageTime/1000.0).toPrecision(4) + "s";
     text += "<br>words in use: " + checkPlaces.length;
