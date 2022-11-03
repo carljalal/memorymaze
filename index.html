@@ -351,7 +351,7 @@ displayMap = () => {
                 tempText+= "</span>"
             }
         }
-        if (yy < 4) tempText+= "<br>";
+        if (yy < viewDiameter - 1) tempText+= "<br>";
     }
     mapElement.innerHTML = tempText;
     refreshMapStyle();
@@ -587,30 +587,36 @@ initElement.onclick = () => {
         if(wordListArray[i].substr(0,5).toLowerCase() == "mapx "){
             mapBoundX = parseInt(wordListArray[i].substring(5));
             wordListArray.splice(i,1);
+            if(i >= wordListArray.length) break;
         }
-        else if(wordListArray[i].substr(0,5).toLowerCase() == "mapy "){
+        if(wordListArray[i].substr(0,5).toLowerCase() == "mapy "){
             mapBoundY = parseInt(wordListArray[i].substring(5));
             wordListArray.splice(i,1);
+            if(i >= wordListArray.length) break;
         }
-        else if(wordListArray[i].substr(0,10).toLowerCase() == "randchars "){
+        if(wordListArray[i].substr(0,10).toLowerCase() == "randchars "){
             randchars = true;
             numRandChars = parseInt(wordListArray[i].substring(10));
             wordListArray.splice(i,1);
+            if(i >= wordListArray.length) break;
         }
-        else if(wordListArray[i].substr(0,9).toLowerCase() == "randnums "){
+        if(wordListArray[i].substr(0,9).toLowerCase() == "randnums "){
             randchars = true;
             numRandChars = parseInt(wordListArray[i].substring(9));
             randCharList = randNumList;
             wordListArray.splice(i,1);
+            if(i >= wordListArray.length) break;
         }
-        else if(wordListArray[i].substr(0,7).toLowerCase() == "nowalls"){
+        if(wordListArray[i].substr(0,7).toLowerCase() == "nowalls"){
             allowWalls = false;
             wordListArray.splice(i,1);
+            if(i >= wordListArray.length) break;
         }
-        else if(wordListArray[i].substr(0,10).toLowerCase() == "viewrange "){
+        if(wordListArray[i].substr(0,10).toLowerCase() == "viewrange "){
             viewRange = parseInt(wordListArray[i].substring(10));
             viewDiameter = 1 + (viewRange * 2);
             wordListArray.splice(i,1);
+            if(i >= wordListArray.length) break;
         }
     }
     wordDict = wordListArray;
