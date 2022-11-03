@@ -44,6 +44,7 @@ let numRandChars = 0;
 let allowWalls = true;
 let viewDiameter = 5;
 let viewRange = 2;
+let addRate = 10;
 
 
 basicRandom = (min,max) => {
@@ -252,7 +253,7 @@ checkAnswer = () => {
     if(isInsideCheckPlaces(answerElement.value) || noTyping == true){
         if(currentPosition.x == checkPlaces[currentTargetPlaceIndex].x 
         && currentPosition.y == checkPlaces[currentTargetPlaceIndex].y){
-            if(basicRandom(0,6)==0) addCheckPlace();
+            if(basicRandom(0,addRate)==0) addCheckPlace();
             newQuestion();
             correct = true;
         }
@@ -615,6 +616,11 @@ initElement.onclick = () => {
         else if(wordListArray[i].substr(0,10).toLowerCase() == "viewrange "){
             viewRange = parseInt(wordListArray[i].substring(10));
             viewDiameter = 1 + (viewRange * 2);
+            wordListArray.splice(i,1);
+            i--;
+        }
+        else if(wordListArray[i].substr(0,8).toLowerCase() == "addrate "){
+            addRate = parseInt(wordListArray[i].substring(8));
             wordListArray.splice(i,1);
             i--;
         }
