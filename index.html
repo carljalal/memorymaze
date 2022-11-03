@@ -39,6 +39,7 @@ let currentTime = 0.0;
 let averageTime = 0.0;
 let answerTime = 0.0;
 let totalTime = 0.0;
+let randchars = false;
 
 
 basicRandom = (min,max) => {
@@ -60,7 +61,7 @@ randomItemDifferent = (dict,unmatch) => {
 
 
 
-
+randCharList = "`1234567890-=qwertyuiop[]\\asdfasdfghjkl;'zxcvbnm,./~!@#$%^&*()_+QWERTYUIOP{}|ASDFGHJKL:\"ZXCVBNM<>?";
 
 
 addCheckPlace = () => {
@@ -77,7 +78,12 @@ addCheckPlace = () => {
     // make sure it's unique
     let found = false;
     for(let i = 0; i <= 1000; i++){
-        randWord = randomItem(wordDict);
+        if(randchars){
+            for(let i = 0; i < 2; i++){
+                randWord += randCharList[Math.floor(Math.random() * randCharList.length)];
+            }
+        }
+        else randWord = randomItem(wordDict);
         let found = false;
         for(let j = 0; j < checkPlaces.length; j++){
             if(checkPlaces[j].word == randWord) {
@@ -92,12 +98,15 @@ addCheckPlace = () => {
             return;
         }
     }
+
     // if it's a repeat after 1000 times, still add one
     if (allowDuplicates == true){
         lastCheckPlace = {x:randx,y:randy,word:randWord};
         checkPlaces.push(lastCheckPlace);
         feedbackElement.textContent = "we're on duplicates now";
     }
+
+    
 }
 
 scoreElement = document.createElement("div");
@@ -282,7 +291,8 @@ refreshScore = () => {
     text += "<br>time for last question: " + (answerTime/1000.0).toPrecision(4) + "s";
     text += "<br>average time per question: " + (averageTime/1000.0).toPrecision(4) + "s";
     text += "<br>words in use: " + checkPlaces.length;
-    text += "<br>total words: " + wordDict.length;
+    if (randchars) text += "<br>total words: " + checkPlaces.length;
+    else text += "<br>total words: " + wordDict.length;
     scoreElement.innerHTML = text;
     scoreElement.style.fontFamily = "Verdana";
     scoreElement.style.fontSize = "10px";
@@ -569,6 +579,20 @@ initElement.onclick = () => {
     wordListString = wordListString.replace("\r\g","");
     wordListArray = wordListString.split("\n");
     wordListArray = removeItemAll(wordListArray,"");
+    for(let i = 0; i < wordListArray.length; i++){
+        if(wordListArray[i].substr(0,5).toLowerCase() == "mapx "){
+            mapBoundX = parseInt(wordListArray[i].substring(5));
+            wordListArray.splice(i,1);
+        }
+        if(wordListArray[i].substr(0,5).toLowerCase() == "mapy "){
+            mapBoundY = parseInt(wordListArray[i].substring(5));
+            wordListArray.splice(i,1);
+        }
+        if(wordListArray[i].trim().toLowerCase() == "randchars"){
+            randchars = true;
+            wordListArray.splice(i,1);
+        }
+    }
     wordDict = wordListArray;
     
     answerElement.value = "";
