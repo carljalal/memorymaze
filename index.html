@@ -40,6 +40,10 @@ let averageTime = 0.0;
 let answerTime = 0.0;
 let totalTime = 0.0;
 let randchars = false;
+let numRandChars = 0;
+let allowWalls = true;
+let viewDiameter = 5;
+let viewRange = 2;
 
 
 basicRandom = (min,max) => {
@@ -62,7 +66,7 @@ randomItemDifferent = (dict,unmatch) => {
 
 
 randCharList = "`1234567890-=qwertyuiop[]\\asdfasdfghjkl;'zxcvbnm,./~!@#$%^&*()_+QWERTYUIOP{}|ASDFGHJKL:\"ZXCVBNM<>?";
-
+randNumList = "0123456789";
 
 addCheckPlace = () => {
     let randx = basicRandom(0,mapBoundX-1);
@@ -79,7 +83,7 @@ addCheckPlace = () => {
     let found = false;
     for(let i = 0; i <= 1000; i++){
         if(randchars){
-            for(let i = 0; i < 2; i++){
+            for(let i = 0; i < numRandChars; i++){
                 randWord += randCharList[Math.floor(Math.random() * randCharList.length)];
             }
         }
@@ -214,6 +218,8 @@ putdownElement.style.display = "none"
 mapVar = []
 displayMapVar = []
 
+
+setupMap = () => {
 for(let i = 0; i < 100; i++){
     mapVar.push([]);
     for(let j = 0; j < 100; j++){
@@ -221,15 +227,13 @@ for(let i = 0; i < 100; i++){
     }
 }
 
-
-
 for(let i = 0; i < 5; i++){
     displayMapVar.push([]);
     for(let j = 0; j < 5; j++){
         displayMapVar[i].push("");
     }
 }
-
+}
 
 currentPosition = {x: 0, y: 0};
 
@@ -316,19 +320,19 @@ displayMap = () => {
         mapVar[xx][yy] = "O";
     }
 
-    for(let xx = currentPosition.x - 2; xx <= currentPosition.x + 2; xx++){
-        for(let yy = currentPosition.y - 2; yy <= currentPosition.y + 2; yy++){
-            if(xx < 0 || yy < 0) displayMapVar[xx - currentPosition.x + 2][yy - currentPosition.y + 2] = "8";
-            else if(xx >= mapBoundX || yy >= mapBoundY) displayMapVar[xx - currentPosition.x + 2][yy - currentPosition.y + 2] = "8";
-            else displayMapVar[xx - currentPosition.x + 2][yy - currentPosition.y + 2] = mapVar[xx][yy];
+    for(let xx = currentPosition.x - viewRange; xx <= currentPosition.x + viewRange; xx++){
+        for(let yy = currentPosition.y - viewRange; yy <= currentPosition.y + viewRange; yy++){
+            if(xx < 0 || yy < 0) displayMapVar[xx - currentPosition.x + viewRange][yy - currentPosition.y + viewRange] = "8";
+            else if(xx >= mapBoundX || yy >= mapBoundY) displayMapVar[xx - currentPosition.x + viewRange][yy - currentPosition.y + viewRange] = "8";
+            else displayMapVar[xx - currentPosition.x + viewRange][yy - currentPosition.y + viewRange] = mapVar[xx][yy];
         }
     }
     mapElement.innerHTML = "";
     let tempText = "";
-    for(let yy = 0; yy < 5; yy++){
-        for(let xx = 0; xx < 5; xx++){
+    for(let yy = 0; yy < viewDiameter; yy++){
+        for(let xx = 0; xx < viewDiameter; xx++){
             let center = false;
-            if(xx == 2 && yy == 2) {
+            if(xx == viewRange && yy == viewRange) {
                 center = true;
             }
             if(center) {
@@ -584,12 +588,28 @@ initElement.onclick = () => {
             mapBoundX = parseInt(wordListArray[i].substring(5));
             wordListArray.splice(i,1);
         }
-        if(wordListArray[i].substr(0,5).toLowerCase() == "mapy "){
+        else if(wordListArray[i].substr(0,5).toLowerCase() == "mapy "){
             mapBoundY = parseInt(wordListArray[i].substring(5));
             wordListArray.splice(i,1);
         }
-        if(wordListArray[i].trim().toLowerCase() == "randchars"){
+        else if(wordListArray[i].substr(0,10).toLowerCase() == "randchars "){
             randchars = true;
+            numRandChars = parseInt(wordListArray[i].substring(10));
+            wordListArray.splice(i,1);
+        }
+        else if(wordListArray[i].substr(0,9).toLowerCase() == "randnums "){
+            randchars = true;
+            numRandChars = parseInt(wordListArray[i].substring(9));
+            randCharList = randNumList;
+            wordListArray.splice(i,1);
+        }
+        else if(wordListArray[i].substr(0,7).toLowerCase() == "nowalls"){
+            allowWalls = false;
+            wordListArray.splice(i,1);
+        }
+        else if(wordListArray[i].substr(0,10).toLowerCase() == "viewrange "){
+            viewRange = parseInt(wordListArray[i].substring(10));
+            viewDiameter = 1 + (viewRange * 2);
             wordListArray.splice(i,1);
         }
     }
@@ -610,11 +630,13 @@ initElement.onclick = () => {
 
     setMapVar();
 
-    wallAlgorithm();
+    if(allowWalls){
+        wallAlgorithm();
+    }
 
-    for(let i = 0; i < 5; i++){
+    for(let i = 0; i < viewDiameter; i++){
         displayMapVar.push([]);
-        for(let j = 0; j < 5; j++){ 
+        for(let j = 0; j < viewDiameter; j++){ 
             displayMapVar[i].push("");
         }
     }
