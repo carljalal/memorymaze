@@ -45,6 +45,7 @@ let allowWalls = true;
 let viewDiameter = 5;
 let viewRange = 2;
 let addRate = 10;
+let numStartingPlaces = 4;
 
 
 basicRandom = (min,max) => {
@@ -570,19 +571,7 @@ wallAlgorithm = () => {
     
 }
 
-initElement.onclick = () => {
-    sessionStarted = true;
-    startTime = performance.now();
-    lastTime = startTime;
-    answerElement.placeholder = "type here and hit check!"
-    hideShowNonInitButtons("");
-    refreshMapStyle();
-    if (noTyping == true) answerElement.style.display = "none"
-    initElement.style.display = "none"
-
-    wordListString = answerElement.value
-    wordListString = wordListString.replace("\r\g","");
-    wordListArray = wordListString.split("\n");
+doCommands = (wordListArray) => {
     wordListArray = removeItemAll(wordListArray,"");
     for(let i = 0; i < wordListArray.length; i++){
         if(wordListArray[i].substr(0,5).toLowerCase() == "mapx "){
@@ -625,6 +614,22 @@ initElement.onclick = () => {
             i--;
         }
     }
+}
+
+initElement.onclick = () => {
+    sessionStarted = true;
+    startTime = performance.now();
+    lastTime = startTime;
+    answerElement.placeholder = "type here and hit check!"
+    hideShowNonInitButtons("");
+    refreshMapStyle();
+    if (noTyping == true) answerElement.style.display = "none"
+    initElement.style.display = "none"
+
+    wordListString = answerElement.value
+    wordListString = wordListString.replace("\r\g","");
+    let wordListArray = wordListString.split("\n");
+    doCommands(wordListArray);
     wordDict = wordListArray;
     
     answerElement.value = "";
@@ -655,7 +660,7 @@ initElement.onclick = () => {
 
 
     currentPosition = {x: 0, y: 0};
-    for(let i = 1; i <= 4; i++) addCheckPlace();
+    for(let i = 1; i <= numStartingPlaces; i++) addCheckPlace();
     newQuestion();
     displayMap();
     
@@ -663,10 +668,10 @@ initElement.onclick = () => {
 
 document.body.addEventListener("keydown", (event)=>{
     if(event.key == "Enter" && sessionStarted) checkAnswer(); 
-    if(event.key == "ArrowUp" && sessionStarted) moveUp(); 
-    if(event.key == "ArrowDown" && sessionStarted) moveDown(); 
-    if(event.key == "ArrowLeft" && sessionStarted) moveLeft(); 
-    if(event.key == "ArrowRight" && sessionStarted) moveRight(); 
+    if((event.key == "ArrowUp" || event.key =="w") && sessionStarted) moveUp(); 
+    if((event.key == "ArrowDown" || event.key =="s") && sessionStarted) moveDown(); 
+    if((event.key == "ArrowLeft" || event.key =="a") && sessionStarted) moveLeft(); 
+    if((event.key == "ArrowRight" || event.key =="d") && sessionStarted) moveRight(); 
 })
 
 
