@@ -218,7 +218,7 @@ rightElement.innerHTML = "go right!";
 
 
 
-checkElement.innerHTML = "check!";
+checkElement.innerHTML = "select";
 
 answerElement.placeholder = "write list here (each word/phrase separated by a new line)"
 answerElement.cols = 50
@@ -303,7 +303,11 @@ checkAnswer = () => {
     }
 }
 
-checkElement.onclick = checkAnswer;
+checkElement.onclick = () => {
+    if(!goInside()){
+        checkAnswer();
+    }
+}
 
 refreshMapStyle = () => {
     mapElement.style.fontFamily = "Courier New";
@@ -744,6 +748,7 @@ doCommands = (wordListArray) => {
             wordListArray.splice(i,1);
             i--;
         }
+
     }
 }
 
@@ -801,12 +806,15 @@ initElement.onclick = () => {
 }
 
 goInside = (room, x, y) => {
+    let wentInside = false;
     mapVar[room].warps.forEach(w => {if(w.x == x && w.y == y){
         currentPosition.room = w.toRoom;
         currentPosition.x = w.toX;
         currentPosition.y = w.toY;
+        wentInside = true;
     }});
     displayMap();
+    return wentInside;
 }
 
 document.body.addEventListener("keydown", (event)=>{
