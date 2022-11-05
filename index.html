@@ -17,21 +17,22 @@ document.body.addEventListener('dblclick', function(event) {
 
 
 //wordDict = ["dictionary","for","foreach","if","currentPosition","randomItem",".push","[i]",".style."];
-wordDict = [];
-checkPlaces = [];
-lastCheckPlace = {};
-currentTargetPlaceIndex = 0;
-mapBoundX = 20;
-mapBoundY = 20;
-noTyping = true;
-allowDuplicates = false;
-preventWallOverwrite = true;
-emptyChar = "&#160";
-centerChar = "X";
-itemChar = "O";
-wallChar = "Z";
-oobChar = "8";
-allowDiagonals = false;
+let wordDict = [];
+let checkPlaces = [];
+let lastCheckPlace = {};
+let currentTargetPlaceIndex = 0;
+let mapBoundX = 10;
+let mapBoundY = 10;
+let noTyping = true;
+let allowDuplicates = false;
+let preventWallOverwrite = true;
+let emptyChar = "&#160";
+let centerChar = "X";
+let itemChar = "O";
+let wallChar = "Z";
+let oobChar = "8";
+let warpChar = "W";
+let allowDiagonals = false;
 let sessionStarted = false;
 let startTime = 0.0;
 let lastTime = 0.0;
@@ -46,6 +47,19 @@ let viewDiameter = 5;
 let viewRange = 2;
 let addRate = 10;
 let numStartingPlaces = 4;
+let allowHints = false;
+let multipleRooms = true;
+let numRooms = 10;
+let numExtraConnections = 5;
+let minMapX = 4;
+let minMapY = 4;
+let maxMapX = 12;
+let maxMapY = 12;
+
+let mapVar = []
+let displayMapVar = []
+
+
 
 
 basicRandom = (min,max) => {
@@ -67,20 +81,25 @@ randomItemDifferent = (dict,unmatch) => {
 
 
 
-randCharList = "`1234567890-=qwertyuiop[]\\asdfasdfghjkl;'zxcvbnm,./~!@#$%^&*()_+QWERTYUIOP{}|ASDFGHJKL:\"ZXCVBNM<>?";
-randNumList = "0123456789";
+let randCharList = "`1234567890-=qwertyuiop[]\\asdfasdfghjkl;'zxcvbnm,./~!@#$%^&*()_+QWERTYUIOP{}|ASDFGHJKL:\"ZXCVBNM<>?";
+let randNumList = "0123456789";
 
 addCheckPlace = () => {
+    let randroom = basicRandom(0, numRooms-1);
     let randx = basicRandom(0,mapBoundX-1);
     let randy = basicRandom(0,mapBoundY-1);
-    if(preventWallOverwrite){
-        for(let i = 0; i <= 1000; i++){
-            if(mapVar[randx][randy] != "Z") break;
-            randx = basicRandom(0,mapBoundX-1);
-            randy = basicRandom(0,mapBoundY-1);
+    for(let i = 0; i <= 1000; i++){
+        if(mapVar[randroom].xy[randx][randy] != "Z" || !preventWallOverwrite) {
+            if(mapVar[randroom].xy[randx][randy] != "W") {
+                break;
+            }
         }
+        randroom = basicRandom(0, numRooms-1);
+        randx = basicRandom(0,mapBoundX-1);
+        randy = basicRandom(0,mapBoundY-1);
     }
-    randWord = "";
+    
+    let randWord = "";
     // make sure it's unique
     let found = false;
     for(let i = 0; i <= 1000; i++){
@@ -99,8 +118,13 @@ addCheckPlace = () => {
         }
         if (found == false) {
             // unique
-            lastCheckPlace = {x:randx,y:randy,word:randWord};
+            lastCheckPlace = {x:randx,y:randy,room: randroom,word:randWord};
             checkPlaces.push(lastCheckPlace);
+            mapVar[randroom].places.push(lastCheckPlace);
+            if(allowHints){
+                feedbackElement.textContent += "new place added:\n";
+                feedbackElement.textContent += JSON.stringify(lastCheckPlace);
+            }
             return;
         }
     }
@@ -109,7 +133,11 @@ addCheckPlace = () => {
     if (allowDuplicates == true){
         lastCheckPlace = {x:randx,y:randy,word:randWord};
         checkPlaces.push(lastCheckPlace);
-        feedbackElement.textContent = "we're on duplicates now";
+        feedbackElement.textContent = "we're on duplicates now\n";
+        if(allowHints){
+            feedbackElement.textContent += "new place added:\n";
+            feedbackElement.textContent += JSON.stringify(lastCheckPlace);
+        }
     }
 
     
@@ -217,10 +245,8 @@ hideShowNonInitButtons("none");
 pickupElement.style.display = "none"
 putdownElement.style.display = "none"
 
-mapVar = []
-displayMapVar = []
 
-
+/*
 setupMap = () => {
 for(let i = 0; i < 100; i++){
     mapVar.push([]);
@@ -236,8 +262,10 @@ for(let i = 0; i < 5; i++){
     }
 }
 }
+*/
 
-currentPosition = {x: 0, y: 0};
+
+let currentPosition = {x: 0, y: 0, room:0};
 
 
 isInsideCheckPlaces = (word) => {
@@ -261,10 +289,10 @@ checkAnswer = () => {
     }
     answerElement.value = ""
     if(correct==false) {
-        feedbackElement.textContent = "error"
+        feedbackElement.textContent += "error"
     }
     else {
-        feedbackElement.textContent = "you got it!"
+        feedbackElement.textContent += "\nyou got it!"
         numCorrect++;
         currentTime = performance.now();
         answerTime = currentTime - lastTime;
@@ -307,10 +335,13 @@ refreshScore = () => {
 
 
 displayMap = () => {
+    let room = mapVar[currentPosition.room];
     feedbackElement.textContent = ""
     insideElement.innerHTML = "words inside:<br>";
     for(let checkPlaceIdx = 0; checkPlaceIdx < checkPlaces.length; checkPlaceIdx++){
-        if(currentPosition.x == checkPlaces[checkPlaceIdx].x && currentPosition.y == checkPlaces[checkPlaceIdx].y){
+        if(currentPosition.x == checkPlaces[checkPlaceIdx].x 
+        && currentPosition.y == checkPlaces[checkPlaceIdx].y
+        && currentPosition.room == checkPlaces[checkPlaceIdx].room){
             insideElement.innerHTML += checkPlaces[checkPlaceIdx].word + "<br>";
         }
     }
@@ -319,14 +350,19 @@ displayMap = () => {
     for(let i = 0; i < checkPlaces.length; i++){
         let xx = checkPlaces[i].x;
         let yy = checkPlaces[i].y;
-        mapVar[xx][yy] = "O";
+        room.xy[xx][yy] = "O";
+    }
+
+    // write the W for all positions which is a warp place
+    for(let i=0; i < room.warps.length; i++){
+        room.xy[room.warps[i].x][room.warps[i].y] = "W"; 
     }
 
     for(let xx = currentPosition.x - viewRange; xx <= currentPosition.x + viewRange; xx++){
         for(let yy = currentPosition.y - viewRange; yy <= currentPosition.y + viewRange; yy++){
             if(xx < 0 || yy < 0) displayMapVar[xx - currentPosition.x + viewRange][yy - currentPosition.y + viewRange] = "8";
-            else if(xx >= mapBoundX || yy >= mapBoundY) displayMapVar[xx - currentPosition.x + viewRange][yy - currentPosition.y + viewRange] = "8";
-            else displayMapVar[xx - currentPosition.x + viewRange][yy - currentPosition.y + viewRange] = mapVar[xx][yy];
+            else if(xx >= room.mapBoundX || yy >= room.mapBoundY) displayMapVar[xx - currentPosition.x + viewRange][yy - currentPosition.y + viewRange] = "8";
+            else displayMapVar[xx - currentPosition.x + viewRange][yy - currentPosition.y + viewRange] = zoom.xy[xx][yy];
         }
     }
     mapElement.innerHTML = "";
@@ -346,6 +382,7 @@ displayMap = () => {
             if (c == "8") tempText += oobChar;
             if (c == "O" && !center) tempText += itemChar;
             if (c == "X" && !center) tempText += emptyChar;
+            if (c == "W" && !center) tempText += warpChar;
             if (center) tempText += centerChar;
             
             tempText += " ";
@@ -361,12 +398,12 @@ displayMap = () => {
 }
 
 
-isWalkable = (x,y) => {
+isWalkable = (room,x,y) => {
     if(x < 0) return false;
-    if(x >= mapBoundX) return false;
+    if(x >= mapVar[room].mapBoundX) return false;
     if(y < 0) return false;
-    if(y >= mapBoundY) return false;
-    if(mapVar[x][y] == "Z"){
+    if(y >= mapVar[room].mapBoundY) return false;
+    if(mapVar[room].xy[x][y] == "Z"){
         return false;
     }
     return true;
@@ -374,7 +411,7 @@ isWalkable = (x,y) => {
 
 
 moveLeft = () => {
-    if(isWalkable(currentPosition.x-1,currentPosition.y)) {
+    if(isWalkable(currentPosition.room,currentPosition.x-1,currentPosition.y)) {
         currentPosition.x--;
         numSteps++;
         displayMap();
@@ -382,7 +419,7 @@ moveLeft = () => {
 }
 
 moveRight = () => {
-    if(isWalkable(currentPosition.x+1,currentPosition.y)) {
+    if(isWalkable(currentPosition.room,currentPosition.x+1,currentPosition.y)) {
         currentPosition.x++;
         numSteps++;
         displayMap();
@@ -390,7 +427,7 @@ moveRight = () => {
 }
 
 moveUp = () => {
-    if(isWalkable(currentPosition.x,currentPosition.y-1)) {
+    if(isWalkable(currentPosition.room,currentPosition.x,currentPosition.y-1)) {
         currentPosition.y--;
         numSteps++;
         displayMap();
@@ -398,7 +435,7 @@ moveUp = () => {
 }
 
 moveDown = () => {
-    if(isWalkable(currentPosition.x,currentPosition.y+1)) {
+    if(isWalkable(currentPosition.room,currentPosition.x,currentPosition.y+1)) {
         currentPosition.y++;
         numSteps++;
         displayMap();
@@ -452,7 +489,7 @@ removeItemAll = (arr, value) => {
 }
 
 
-
+/*
 setMapVar = () => {
     for(let i = 0; i < mapBoundX; i++){
         mapVar.push([]);
@@ -461,17 +498,17 @@ setMapVar = () => {
         }
     }
 }
+*/
 
 
-
-goodWall = (x,y) => {
+goodWall = (room, x,y) => {
     wallcheck = [["","",""],["","",""],["","",""]];
     for(let xcheck = -1; xcheck <=1; xcheck++){
         for(let ycheck = -1; ycheck <=1; ycheck++){
-            if(x + xcheck < 0 || x + xcheck >= mapBoundX) wallcheck[xcheck+1][ycheck+1] = "Z";
-            else if(y + ycheck < 0 || y + ycheck >= mapBoundY) wallcheck[xcheck+1][ycheck+1] = "Z";
+            if(x + xcheck < 0 || x + xcheck >= room.mapBoundX) wallcheck[xcheck+1][ycheck+1] = "Z";
+            else if(y + ycheck < 0 || y + ycheck >= room.mapBoundY) wallcheck[xcheck+1][ycheck+1] = "Z";
             else {
-                wallcheck[xcheck+1][ycheck+1] = mapVar[x+xcheck][y+ycheck];
+                wallcheck[xcheck+1][ycheck+1] = room.xy[x+xcheck][y+ycheck];
             }
         }
     }
@@ -499,19 +536,19 @@ goodWall = (x,y) => {
     return true;
 }
 
-goodWallPure = (x,y) => {
-    if(x < 0 || x >= mapBoundX || y < 0 || y >= mapBoundY) return false;
+goodWallPure = (room,x,y) => {
+    if(x < 0 || x >= room.mapBoundX || y < 0 || y >= room.mapBoundY) return false;
     wallcheck = [["","",""],["","",""],["","",""]];
     for(let xcheck = -1; xcheck <=1; xcheck++){
         for(let ycheck = -1; ycheck <=1; ycheck++){
             // is pt within bounds
-            if(x + xcheck >= 0 && x + xcheck < mapBoundX) {
-                if(y + ycheck >= 0 && y + ycheck < mapBoundY) {
+            if(x + xcheck >= 0 && x + xcheck < room.mapBoundX) {
+                if(y + ycheck >= 0 && y + ycheck < room.mapBoundY) {
                     //let s = " " + (x) + " " + (y);
                     //console.log(s)
                     //s = " " + (x+xcheck) + " " + (y+ycheck);
                     //console.log(s)
-                    if(mapVar[x+xcheck][y+ycheck] == "Z") return false; 
+                    if(room.xy[x+xcheck][y+ycheck] == "Z") return false; 
                 }
             }
         }
@@ -519,28 +556,81 @@ goodWallPure = (x,y) => {
     return true;
 }
 
-
-let walls = [];
-
-makeWallAny = () => {
-    let x = basicRandom(0,mapBoundX-1);
-    let y = basicRandom(0,mapBoundY-1);
-    if(goodWallPure(x,y)) {
-        mapVar[x][y] = "Z";
-        walls.push({x:x,y:y});
+initializeRooms = (_numRooms,_minMapX,_maxMapX,_minMapY,_maxMapY) => {
+    for(let i = 0; i < _numRooms; i++){
+        let mapx = basicRandom(_minMapX,_maxMapX);
+        let mapy = basicRandom(_minMapY,_maxMapY);
+        mapVar.push({xy:[],walls:[],places:[],warps:[],mapBoundX:mapx,mapBoundY:mapy});
+        for(let x = 0; x < mapx; x++){
+            mapVar[i].xy.push([]);
+            for(let y = 0; y < mapy; y++){
+                mapVar[i].xy[x].push("X");
+            }
+        }
+        
     }
 }
 
-makeWallNearby = () => {
-    let r = basicRandom(0,walls.length-1);
-    let x = walls[r].x;
-    let y = walls[r].y;
+addWarp = (roomStart, roomEnd, twoway = true) => {
+    
+    for(let i = 0; i <= 1000; i++){
+        let randxStart = basicRandom(0,mapVar[roomStart].mapBoundX-1);
+        let randyStart = basicRandom(0,mapVar[roomStart].mapBoundY-1);
+        if(mapVar[roomStart].xy[randxStart][randyStart] != "Z" || !preventWallOverwrite) {
+            if(mapVar[roomStart].xy[randxStart][randyStart] != "W") {
+                for(let j = 0; j <= 1000; j++){
+                    let randxEnd = basicRandom(0,mapVar[roomEnd].mapBoundX-1);
+                    let randyEnd = basicRandom(0,mapVar[roomEnd].mapBoundY-1);
+                    if(mapVar[roomEnd].xy[randxStart][randyStart] != "Z" || !preventWallOverwrite) {
+                        if(mapVar[roomEnd].xy[randxStart][randyStart] != "W") {
+                            mapVar[roomStart].xy[randxStart][randyStart] = "W";
+                            mapVar[roomStart].warps.push({x:randxStart,y:randyStart,toRoom:roomEnd,
+                                toX: randxEnd, toY: randyEnd});
+                                if(twoway){
+                                    mapVar[roomEnd].xy[randxStart][randyStart] = "W";
+                                    mapVar[roomEnd].warps.push({x:randxEnd,y:randyEnd,toRoom:roomStart,
+                                        toX: randxStart, toY: randyStart});
+                                }
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return false;
+}
+
+initializeWarps = () => {
+    for(let i = 1; i < mapVar.length; i++){
+        addWarp(i,basicRandom(0,i-1));
+    }
+    for(let i = 1; i <= numExtraConnections; i++){
+        addWarp(basicRandom(0,numRooms-1),basicRandom(0,numRooms-1));
+    }
+}
+
+
+makeWallAny = (room) => {
+    let x = basicRandom(0,room.mapBoundX-1);
+    let y = basicRandom(0,room.mapBoundY-1);
+    if(goodWallPure(room,x,y)) {
+        room.xy[x][y] = "Z";
+        room.walls.push({x:x,y:y});
+    }
+}
+
+makeWallNearby = (room) => {
+    let r = basicRandom(0,room.walls.length-1);
+    let x = room.walls[r].x;
+    let y = room.walls[r].y;
 
     if(allowDiagonals){
-        x = walls[r].x + basicRandom(-1,1);
-        y = walls[r].y + basicRandom(-1,1);
+        x = room.walls[r].x + basicRandom(-1,1);
+        y = room.walls[r].y + basicRandom(-1,1);
     }
-    else{
+    else{ 
+        // vertical or horizontal only
         if(basicRandom(0,1)==0){
             x+=basicRandom(-1,1);
         }
@@ -549,23 +639,23 @@ makeWallNearby = () => {
         }
     }
     
-    if(goodWall(x,y)) {
-        mapVar[x][y] = "Z";
-        walls.push({x:x,y:y});
+    if(goodWall(room,x,y)) {
+        room.xy[x][y] = "Z";
+        room.walls.push({x:x,y:y});
     }
 }
 
 
-wallAlgorithm = () => {
+wallAlgorithm = (room) => {
     
-    makeWallAny();
-    for ( let i = 0; i < 1000; i ++){
+    makeWallAny(room);
+    for ( let i = 0; i < room.mapBoundX * room.mapBoundY; i ++){
         let r = basicRandom(0,10);
         if(r==0){
-            makeWallAny();
+            makeWallAny(room);
         }
         else {
-            makeWallNearby();
+            makeWallNearby(room);
         }
     }
     
@@ -613,6 +703,36 @@ doCommands = (wordListArray) => {
             wordListArray.splice(i,1);
             i--;
         }
+        else if(wordListArray[i].substr(0,17).toLowerCase() == "numstartedplaces "){
+            numStartingPlaces = parseInt(wordListArray[i].substring(17));
+            wordListArray.splice(i,1);
+            i--;
+        }
+        else if(wordListArray[i].substr(0,8).toLowerCase() == "maxmapx "){
+            maxMapX = parseInt(wordListArray[i].substring(5));
+            wordListArray.splice(i,1);
+            i--;
+        }
+        else if(wordListArray[i].substr(0,8).toLowerCase() == "maxmapy "){
+            maxMapY = parseInt(wordListArray[i].substring(5));
+            wordListArray.splice(i,1);
+            i--;
+        }
+        else if(wordListArray[i].substr(0,8).toLowerCase() == "minmapx "){
+            minMapX = parseInt(wordListArray[i].substring(5));
+            wordListArray.splice(i,1);
+            i--;
+        }
+        else if(wordListArray[i].substr(0,8).toLowerCase() == "minmapy "){
+            minMapY = parseInt(wordListArray[i].substring(5));
+            wordListArray.splice(i,1);
+            i--;
+        }
+        else if(wordListArray[i].substr(0,10).toLowerCase() == "allowhints"){
+            allowHints = true;
+            wordListArray.splice(i,1);
+            i--;
+        }
     }
 }
 
@@ -645,10 +765,11 @@ initElement.onclick = () => {
     mapVar = []
     displayMapVar = []
 
-    setMapVar();
+    initializeRooms(numRooms,minMapX,maxMapX,minMapY,maxMapY);
 
+    initializeWarps();
     if(allowWalls){
-        wallAlgorithm();
+        mapVar.forEach(room => wallAlgorithm(room));
     }
 
     for(let i = 0; i < viewDiameter; i++){
@@ -659,7 +780,7 @@ initElement.onclick = () => {
     }
 
 
-    currentPosition = {x: 0, y: 0};
+    currentPosition = {x: 0, y: 0, room:0};
     for(let i = 1; i <= numStartingPlaces; i++) addCheckPlace();
     newQuestion();
     displayMap();
