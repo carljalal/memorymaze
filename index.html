@@ -47,14 +47,14 @@ let viewDiameter = 5;
 let viewRange = 2;
 let addRate = 10;
 let numStartingPlaces = 4;
-let allowHints = false;
+let allowHints = true;
 let multipleRooms = true;
-let numRooms = 10;
-let numExtraConnections = 5;
+let numRooms = 4;
+let numExtraConnections = 0;
 let minMapX = 4;
 let minMapY = 4;
-let maxMapX = 12;
-let maxMapY = 12;
+let maxMapX = 8;
+let maxMapY = 8;
 
 let mapVar = []
 let displayMapVar = []
@@ -86,8 +86,8 @@ let randNumList = "0123456789";
 
 addCheckPlace = () => {
     let randroom = basicRandom(0, numRooms-1);
-    let randx = basicRandom(0,mapBoundX-1);
-    let randy = basicRandom(0,mapBoundY-1);
+    let randx = basicRandom(0,mapVar[randroom].mapBoundX-1);
+    let randy = basicRandom(0,mapVar[randroom].mapBoundY-1);
     for(let i = 0; i <= 1000; i++){
         if(mapVar[randroom].xy[randx][randy] != "Z" || !preventWallOverwrite) {
             if(mapVar[randroom].xy[randx][randy] != "W") {
@@ -95,8 +95,8 @@ addCheckPlace = () => {
             }
         }
         randroom = basicRandom(0, numRooms-1);
-        randx = basicRandom(0,mapBoundX-1);
-        randy = basicRandom(0,mapBoundY-1);
+        randx = basicRandom(0,mapVar[randroom].mapBoundX-1);
+        randy = basicRandom(0,mapVar[randroom].mapBoundY-1);
     }
     
     let randWord = "";
@@ -348,6 +348,7 @@ displayMap = () => {
 
     // write the O for all positions which is a check place
     for(let i = 0; i < checkPlaces.length; i++){
+        if(checkPlaces[i].room != currentPosition.room) continue;
         let xx = checkPlaces[i].x;
         let yy = checkPlaces[i].y;
         room.xy[xx][yy] = "O";
@@ -362,7 +363,7 @@ displayMap = () => {
         for(let yy = currentPosition.y - viewRange; yy <= currentPosition.y + viewRange; yy++){
             if(xx < 0 || yy < 0) displayMapVar[xx - currentPosition.x + viewRange][yy - currentPosition.y + viewRange] = "8";
             else if(xx >= room.mapBoundX || yy >= room.mapBoundY) displayMapVar[xx - currentPosition.x + viewRange][yy - currentPosition.y + viewRange] = "8";
-            else displayMapVar[xx - currentPosition.x + viewRange][yy - currentPosition.y + viewRange] = zoom.xy[xx][yy];
+            else displayMapVar[xx - currentPosition.x + viewRange][yy - currentPosition.y + viewRange] = room.xy[xx][yy];
         }
     }
     mapElement.innerHTML = "";
@@ -581,13 +582,13 @@ addWarp = (roomStart, roomEnd, twoway = true) => {
                 for(let j = 0; j <= 1000; j++){
                     let randxEnd = basicRandom(0,mapVar[roomEnd].mapBoundX-1);
                     let randyEnd = basicRandom(0,mapVar[roomEnd].mapBoundY-1);
-                    if(mapVar[roomEnd].xy[randxStart][randyStart] != "Z" || !preventWallOverwrite) {
-                        if(mapVar[roomEnd].xy[randxStart][randyStart] != "W") {
+                    if(mapVar[roomEnd].xy[randxEnd][randyEnd] != "Z" || !preventWallOverwrite) {
+                        if(mapVar[roomEnd].xy[randxEnd][randyEnd] != "W") {
                             mapVar[roomStart].xy[randxStart][randyStart] = "W";
                             mapVar[roomStart].warps.push({x:randxStart,y:randyStart,toRoom:roomEnd,
                                 toX: randxEnd, toY: randyEnd});
                                 if(twoway){
-                                    mapVar[roomEnd].xy[randxStart][randyStart] = "W";
+                                    mapVar[roomEnd].xy[randxEnd][randyEnd] = "W";
                                     mapVar[roomEnd].warps.push({x:randxEnd,y:randyEnd,toRoom:roomStart,
                                         toX: randxStart, toY: randyStart});
                                 }
@@ -602,7 +603,7 @@ addWarp = (roomStart, roomEnd, twoway = true) => {
 }
 
 initializeWarps = () => {
-    for(let i = 1; i < mapVar.length; i++){
+    for(let i = 1; i < numRooms; i++){
         addWarp(i,basicRandom(0,i-1));
     }
     for(let i = 1; i <= numExtraConnections; i++){
@@ -649,7 +650,7 @@ makeWallNearby = (room) => {
 wallAlgorithm = (room) => {
     
     makeWallAny(room);
-    for ( let i = 0; i < room.mapBoundX * room.mapBoundY; i ++){
+    for ( let i = 0; i < room.mapBoundX * room.mapBoundY * 10; i ++){
         let r = basicRandom(0,10);
         if(r==0){
             makeWallAny(room);
@@ -767,10 +768,12 @@ initElement.onclick = () => {
 
     initializeRooms(numRooms,minMapX,maxMapX,minMapY,maxMapY);
 
-    initializeWarps();
+    
     if(allowWalls){
         mapVar.forEach(room => wallAlgorithm(room));
     }
+
+    initializeWarps();
 
     for(let i = 0; i < viewDiameter; i++){
         displayMapVar.push([]);
@@ -787,8 +790,25 @@ initElement.onclick = () => {
     
 }
 
+goInside = (room, x, y) => {
+    mapVar[room].warps.forEach(w => {if(w.x == x && w.y == y){
+        currentPosition.room = w.toRoom;
+        currentPosition.x = w.toX;
+        currentPosition.y = w.toY;
+    }});
+    displayMap();
+}
+
 document.body.addEventListener("keydown", (event)=>{
-    if(event.key == "Enter" && sessionStarted) checkAnswer(); 
+    if(event.key == "Enter" && sessionStarted) {
+        let room = currentPosition.room;
+        let x = currentPosition.x;
+        let y = currentPosition.y;
+        if(mapVar[room].xy[x][y] == "W"){
+            goInside(room, x, y);
+        }
+        else checkAnswer(); 
+    }
     if((event.key == "ArrowUp" || event.key =="w") && sessionStarted) moveUp(); 
     if((event.key == "ArrowDown" || event.key =="s") && sessionStarted) moveDown(); 
     if((event.key == "ArrowLeft" || event.key =="a") && sessionStarted) moveLeft(); 
