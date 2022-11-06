@@ -55,6 +55,7 @@ let minMapX = 4;
 let minMapY = 4;
 let maxMapX = 8;
 let maxMapY = 8;
+let bidirectionalWarps = true;
 
 let mapVar = []
 let displayMapVar = []
@@ -608,10 +609,16 @@ addWarp = (roomStart, roomEnd, twoway = true) => {
 
 initializeWarps = () => {
     for(let i = 1; i < numRooms; i++){
-        addWarp(i,basicRandom(0,i-1));
+        if(bidirectionalWarps){
+            addWarp(i,basicRandom(0,i-1),true);
+        }
+        else{
+            addWarp(i,basicRandom(0,i-1),false);
+            addWarp(basicRandom(0,i-1),i,false);
+        }
     }
     for(let i = 1; i <= numExtraConnections; i++){
-        addWarp(basicRandom(0,numRooms-1),basicRandom(0,numRooms-1));
+        addWarp(basicRandom(0,numRooms-1),basicRandom(0,numRooms-1),bidirectionalWarps);
     }
 }
 
@@ -745,6 +752,11 @@ doCommands = (wordListArray) => {
         }
         else if(wordListArray[i].substr(0,17).toLowerCase() == "extraconnections "){
             numExtraConnections = parseInt(wordListArray[i].substring(17));
+            wordListArray.splice(i,1);
+            i--;
+        }
+        else if(wordListArray[i].substr(0,17).toLowerCase() == "unidirectionalwarps"){
+            bidirectionalWarps = false;
             wordListArray.splice(i,1);
             i--;
         }
