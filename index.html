@@ -226,7 +226,8 @@ feedbackElement = document.createElement("div");
 feedbackElement.style.fontFamily = "Verdana";
 feedbackElement.style.fontSize = "10px";
 feedbackElement.style.whiteSpace = "pre";
-feedbackElement.style.border = "2px solid red"
+feedbackElement.style.border = "2px solid red";
+
 
 checkElement = document.createElement("button");
 scoreElement = document.createElement("div");
@@ -271,6 +272,16 @@ document.body.append(document.createElement("br"));
 document.body.append(scoreElement)
 document.body.append(document.createElement("br"));
 document.body.append(document.createElement("br"));
+
+questionElement.style.padding = "5px";
+insideElement.style.padding = "5px";
+feedbackElement.style.padding = "5px";
+scoreElement.style.padding = "5px";
+
+questionElement.style.margin = "5px";
+insideElement.style.margin = "5px";
+feedbackElement.style.margin = "5px";
+scoreElement.style.margin = "5px";
 
 
 leftElement.innerHTML = "go left!";
@@ -387,9 +398,13 @@ checkAnswer = () => {
 }
 
 checkElement.onclick = () => {
-    if(!goInside()){
-        checkAnswer();
+    let room = currentPosition.room;
+    let x = currentPosition.x;
+    let y = currentPosition.y;
+    if(mapVar[room].xy[x][y] == "W"){
+        goInside(room, x, y);
     }
+    else checkAnswer(); 
 }
 
 refreshMapStyle = () => {
