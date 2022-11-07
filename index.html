@@ -412,6 +412,7 @@ displayMap = () => {
     feedbackElement.textContent = ""
     insideElement.innerHTML = "words inside:<br>";
     for(let checkPlaceIdx = 0; checkPlaceIdx < checkPlaces.length; checkPlaceIdx++){
+        if(checkPlaces[checkPlaceIdx].pickedUp == true) continue;
         if(currentPosition.x == checkPlaces[checkPlaceIdx].x 
         && currentPosition.y == checkPlaces[checkPlaceIdx].y
         && currentPosition.room == checkPlaces[checkPlaceIdx].room){
@@ -421,6 +422,7 @@ displayMap = () => {
 
     // write the O for all positions which is a check place
     for(let i = 0; i < checkPlaces.length; i++){
+        if(checkPlaces[i].pickedUp == true) continue;
         if(checkPlaces[i].room != currentPosition.room) continue;
         let xx = checkPlaces[i].x;
         let yy = checkPlaces[i].y;
@@ -542,6 +544,12 @@ downElement.onclick = () => {
 
 moveToQuestion = () => {
     currentMoveToPlace = findSuitableMovePlace();
+    checkPlaces[currentTargetPlaceIndex].pickedUp = true;
+    let room = checkPlaces[currentTargetPlaceIndex].room;
+    let x = checkPlaces[currentTargetPlaceIndex].x;
+    let y = checkPlaces[currentTargetPlaceIndex].y;
+    mapVar[room].xy[x][y] = "X";
+    displayMap();
     questionElement.innerHTML = "move " + checkPlaces[currentTargetPlaceIndex].word;
     questionElement.innerHTML += " to " + JSON.stringify(currentMoveToPlace);
     lastQuestionType = "moveTo";
