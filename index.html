@@ -196,6 +196,7 @@ findSuitableMovePlace = () => {
 
 scoreElement = document.createElement("div");
 document.body.append(scoreElement);
+document.body.append(document.createElement("br"));
 
 mapElement = document.createElement("div");
 mapElement.style.display = "none";
@@ -246,6 +247,7 @@ hintElement.innerHTML = "";
 
 
 document.body.append(checkElement);
+document.body.append(document.createElement("br"));
 //document.body.append(upElement)
 //document.body.append(downElement)
 //document.body.append(leftElement);
@@ -255,18 +257,23 @@ document.body.append(putdownElement)
 document.body.append(initElement)
 
 document.body.append(questionElement)
+document.body.append(document.createElement("br"));
 
 
 insideElement = document.createElement("div");
 insideElement.style.fontStyle = "italic";
 insideElement.style.border = "4px solid purple"
 document.body.append(insideElement);
+document.body.append(document.createElement("br"));
 
 document.body.append(hintElement)
 document.body.append(historyElement)
 document.body.append(answerElement)
+document.body.append(document.createElement("br"));
 document.body.append(feedbackElement)
+document.body.append(document.createElement("br"));
 document.body.append(scoreElement)
+document.body.append(document.createElement("br"));
 
 
 leftElement.innerHTML = "go left!";
