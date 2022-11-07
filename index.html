@@ -300,7 +300,7 @@ hideShowNonInitButtons = (state) => {
     //putdownElement.style.display = state
 }
 
-hideShowNonInitButtons("inline-block");
+hideShowNonInitButtons("none");
 
 // add these buttons later
 pickupElement.style.display = "none"
@@ -897,7 +897,7 @@ initElement.onclick = () => {
     startTime = performance.now();
     lastTime = startTime;
     answerElement.placeholder = "type here and hit check!"
-    hideShowNonInitButtons("");
+    hideShowNonInitButtons("inline-block");
     refreshMapStyle();
     if (noTyping == true) answerElement.style.display = "none"
     initElement.style.display = "none"
