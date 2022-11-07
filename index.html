@@ -416,10 +416,7 @@ refreshCheckPlaces = (room) => {
     }
 }
 
-
-displayMap = () => {
-    let room = mapVar[currentPosition.room];
-    feedbackElement.textContent = ""
+refreshWordsInside = () => {
     insideElement.innerHTML = "words inside:<br>";
     for(let checkPlaceIdx = 0; checkPlaceIdx < checkPlaces.length; checkPlaceIdx++){
         if(checkPlaces[checkPlaceIdx].pickedUp == true) continue;
@@ -429,6 +426,14 @@ displayMap = () => {
             insideElement.innerHTML += checkPlaces[checkPlaceIdx].word + "<br>";
         }
     }
+}
+
+
+displayMap = () => {
+    let room = mapVar[currentPosition.room];
+    feedbackElement.textContent = "";
+    
+    refreshWordsInside();
 
     refreshCheckPlaces(room);
 
@@ -553,6 +558,7 @@ moveToQuestion = () => {
     let y = checkPlaces[currentTargetPlaceIndex].y;
     mapVar[room].xy[x][y] = "X";
     refreshCheckPlaces(mapVar[room]);
+    refreshWordsInside();
     questionElement.innerHTML = "move " + checkPlaces[currentTargetPlaceIndex].word;
     questionElement.innerHTML += " to " + JSON.stringify(currentMoveToPlace);
     lastQuestionType = "moveTo";
