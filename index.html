@@ -806,7 +806,7 @@ doCommands = (wordListArray) => {
             wordListArray.splice(i,1);
             i--;
         }
-        else if(wordListArray[i].substr(0,17).toLowerCase() == "numstartedplaces "){
+        else if(wordListArray[i].substr(0,18).toLowerCase() == "numstartingplaces "){
             numStartingPlaces = parseInt(wordListArray[i].substring(17));
             wordListArray.splice(i,1);
             i--;
