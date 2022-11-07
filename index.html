@@ -351,6 +351,7 @@ checkAnswer = () => {
                 checkPlaces[currentTargetPlaceIndex].y = currentMoveToPlace.y;
                 checkPlaces[currentTargetPlaceIndex].room = currentMoveToPlace.room;
                 checkPlaces[currentTargetPlaceIndex].pickedUp = false;
+                refreshWordsInside();
                 newQuestion();
                 correct = true;
             }
