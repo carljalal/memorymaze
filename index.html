@@ -270,9 +270,12 @@ document.body.append(hintElement)
 document.body.append(historyElement)
 document.body.append(answerElement)
 document.body.append(document.createElement("br"));
+document.body.append(document.createElement("br"));
 document.body.append(feedbackElement)
 document.body.append(document.createElement("br"));
+document.body.append(document.createElement("br"));
 document.body.append(scoreElement)
+document.body.append(document.createElement("br"));
 document.body.append(document.createElement("br"));
 
 
@@ -422,7 +425,7 @@ questionElement.style.flexWrap = "wrap";
 
 refreshScore = () => {
     let text = "";
-    text += "<br><br><br>num correct: " + numCorrect;
+    text += "Info:<br>num correct: " + numCorrect;
     text += "<br>num steps: " + numSteps;
     text += "<br>average steps per question: " + (numSteps / numCorrect).toPrecision(4);
     text += "<br>time for last question: " + (answerTime/1000.0).toPrecision(4) + "s";
@@ -462,7 +465,7 @@ refreshWordsInside = () => {
 
 displayMap = () => {
     let room = mapVar[currentPosition.room];
-    feedbackElement.textContent = "\nFeedback: \n";
+    feedbackElement.textContent = "Feedback: \n";
     
     refreshWordsInside();
 
