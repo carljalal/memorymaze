@@ -206,24 +206,25 @@ mapElement.addEventListener('dblclick', function(event) {
 }, { passive: false });
 
 
-brElement = document.createElement("div")
-document.body.append(brElement)
-brElement.innerHTML = "<br>"
+brElement = document.createElement("div");
+document.body.append(brElement);
+brElement.innerHTML = "<br>";
 
 leftElement = document.createElement("button");
 rightElement = document.createElement("button");
 pickupElement = document.createElement("button");
 upElement = document.createElement("button");
-downElement = document.createElement("button")
-putdownElement = document.createElement("button")
-initElement = document.createElement("button")
-questionElement = document.createElement("div")
+downElement = document.createElement("button");
+putdownElement = document.createElement("button");
+initElement = document.createElement("button");
+questionElement = document.createElement("div");
 
 questionElement.style.fontFamily = "Verdana";
-questionElement.style.fontSize = "20px"
-answerElement = document.createElement("textarea")
-historyElement = document.createElement("div")
-hintElement = document.createElement("div")
+questionElement.style.fontSize = "20px";
+questionElement.style.border = "5px solid black";
+answerElement = document.createElement("textarea");
+historyElement = document.createElement("div");
+hintElement = document.createElement("div");
 feedbackElement = document.createElement("div");
 feedbackElement.style.fontFamily = "Verdana";
 feedbackElement.style.fontSize = "10px";
@@ -232,13 +233,13 @@ feedbackElement.style.border = "2px solid red"
 
 checkElement = document.createElement("button");
 scoreElement = document.createElement("div");
-scoreElement.style.border = "2px solid lime"
+scoreElement.style.border = "2px solid lime";
 
-pickupElement.innerHTML = "pick up"
-upElement.innerHTML = "go up!"
-downElement.innerHTML = "go down!"
-putdownElement.innerHTML = "put down"
-initElement.innerHTML = "start"
+pickupElement.innerHTML = "pick up";
+upElement.innerHTML = "go up!";
+downElement.innerHTML = "go down!";
+putdownElement.innerHTML = "put down";
+initElement.innerHTML = "start";
 questionElement.innerHTML = "";
 historyElement.innerHTML = "";
 hintElement.innerHTML = "";
@@ -290,11 +291,16 @@ hideShowNonInitButtons = (state) => {
     downElement.style.display = state
     leftElement.style.display = state
     rightElement.style.display = state
+    feedbackElement.style.display = state;
+    scoreElement.style.display = state;
+    mapElement.style.display = state;
+    insideElement.style.display = state;
+    questionElement.style.display = state;
     //pickupElement.style.display = state
     //putdownElement.style.display = state
 }
 
-hideShowNonInitButtons("none");
+hideShowNonInitButtons("inline-block");
 
 // add these buttons later
 pickupElement.style.display = "none"
@@ -393,6 +399,19 @@ refreshMapStyle = () => {
 }
 refreshMapStyle();
 mapElement.style.display = "none";
+feedbackElement.style.display = "none";
+scoreElement.style.display = "none";
+mapElement.style.display = "none";
+insideElement.style.display = "none";
+questionElement.style.display = "none";
+
+feedbackElement.style.flexWrap = "wrap";
+scoreElement.style.flexWrap = "wrap";
+mapElement.style.flexWrap = "wrap";
+insideElement.style.flexWrap = "wrap";
+questionElement.style.flexWrap = "wrap";
+
+
 
 refreshScore = () => {
     let text = "";
