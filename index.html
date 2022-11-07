@@ -56,6 +56,10 @@ let minMapY = 4;
 let maxMapX = 8;
 let maxMapY = 8;
 let bidirectionalWarps = true;
+let moveAroundMode = false;
+let lastQuestionType = null;
+let currentMoveToPlace = null;
+let showPosition = false;
 
 let mapVar = []
 let displayMapVar = []
@@ -132,7 +136,7 @@ addCheckPlace = () => {
 
     // if it's a repeat after 1000 times, still add one
     if (allowDuplicates == true){
-        lastCheckPlace = {x:randx,y:randy,word:randWord};
+        lastCheckPlace = {x:randx,y:randy,room:randroom,word:randWord};
         checkPlaces.push(lastCheckPlace);
         feedbackElement.textContent = "we're on duplicates now\n";
         if(allowHints){
@@ -140,9 +144,55 @@ addCheckPlace = () => {
             feedbackElement.textContent += JSON.stringify(lastCheckPlace);
         }
     }
-
-    
 }
+
+
+findSuitableMovePlace = () => {
+    let randroom = basicRandom(0, numRooms-1);
+    let randx = basicRandom(0,mapVar[randroom].mapBoundX-1);
+    let randy = basicRandom(0,mapVar[randroom].mapBoundY-1);
+    for(let i = 0; i <= 1000; i++){
+        if(mapVar[randroom].xy[randx][randy] != "Z" || !preventWallOverwrite) {
+            if(mapVar[randroom].xy[randx][randy] != "W") {
+                if(mapVar[randroom].xy[randx][randy] != "O") {
+                    break;
+                }
+            }
+        }
+        randroom = basicRandom(0, numRooms-1);
+        randx = basicRandom(0,mapVar[randroom].mapBoundX-1);
+        randy = basicRandom(0,mapVar[randroom].mapBoundY-1);
+    }
+    
+    let randWord = "";
+    // make sure it's unique
+    let found = false;
+    for(let i = 0; i <= 1000; i++){
+        if(randchars){
+            for(let i = 0; i < numRandChars; i++){
+                randWord += randCharList[Math.floor(Math.random() * randCharList.length)];
+            }
+        }
+        else randWord = randomItem(wordDict);
+        let found = false;
+        for(let j = 0; j < checkPlaces.length; j++){
+            if(checkPlaces[j].word == randWord) {
+                found = true;
+                break;
+            }
+        }
+        if (found == false) {
+            // unique
+            return {x:randx,y:randy,room: randroom};
+            
+        }
+    }
+
+    // if it's a repeat after 1000 times, log it
+    feedbackElement.textContent = "unable to find suitable place to move item\n";
+    return;
+}
+
 
 scoreElement = document.createElement("div");
 document.body.append(scoreElement);
@@ -177,6 +227,7 @@ hintElement = document.createElement("div")
 feedbackElement = document.createElement("div");
 feedbackElement.style.fontFamily = "Verdana";
 feedbackElement.style.fontSize = "10px";
+feedbackElement.style.whiteSpace = "pre";
 
 checkElement = document.createElement("button");
 scoreElement = document.createElement("div");
@@ -280,17 +331,33 @@ isInsideCheckPlaces = (word) => {
 
 checkAnswer = () => {
     correct = false;
-    if(isInsideCheckPlaces(answerElement.value) || noTyping == true){
-        if(currentPosition.x == checkPlaces[currentTargetPlaceIndex].x 
-        && currentPosition.y == checkPlaces[currentTargetPlaceIndex].y){
-            if(basicRandom(0,addRate)==0) addCheckPlace();
-            newQuestion();
-            correct = true;
+    if(lastQuestionType == "goTo"){
+        if(isInsideCheckPlaces(answerElement.value) || noTyping == true){
+            if(currentPosition.x == checkPlaces[currentTargetPlaceIndex].x 
+            && currentPosition.y == checkPlaces[currentTargetPlaceIndex].y
+            && currentPosition.room == checkPlaces[currentTargetPlaceIndex].room){
+                if(basicRandom(0,addRate)==0) addCheckPlace();
+                newQuestion();
+                correct = true;
+            }
+        }
+    }
+    if(lastQuestionType == "moveTo"){
+        if(isInsideCheckPlaces(answerElement.value) || noTyping == true){
+            if(currentPosition.x == currentMoveToPlace.x 
+            && currentPosition.y == currentMoveToPlace.y
+            && currentPosition.room == currentMoveToPlace.room){
+                checkPlaces[currentTargetPlaceIndex].x = currentMoveToPlace.x;
+                checkPlaces[currentTargetPlaceIndex].y = currentMoveToPlace.y;
+                checkPlaces[currentTargetPlaceIndex].room = currentMoveToPlace.room;
+                newQuestion();
+                correct = true;
+            }
         }
     }
     answerElement.value = ""
     if(correct==false) {
-        feedbackElement.textContent += "error"
+        feedbackElement.textContent += "\nerror"
     }
     else {
         feedbackElement.textContent += "\nyou got it!"
@@ -332,6 +399,7 @@ refreshScore = () => {
     text += "<br>words in use: " + checkPlaces.length;
     if (randchars) text += "<br>total words: " + checkPlaces.length;
     else text += "<br>total words: " + wordDict.length;
+    if (lastQuestionType == "moveTo") text += "<br>currentposition: " + JSON.stringify(currentMoveToPlace);
     scoreElement.innerHTML = text;
     scoreElement.style.fontFamily = "Verdana";
     scoreElement.style.fontSize = "10px";
@@ -472,14 +540,29 @@ downElement.onclick = () => {
     moveDown();
 }
 
-newQuestion = () => {
+moveToQuestion = () => {
+    currentMoveToPlace = findSuitableMovePlace();
+    questionElement.innerHTML = "move " + checkPlaces[currentTargetPlaceIndex].word;
+    questionElement.innerHTML += " to " + JSON.stringify(currentMoveToPlace);
+    lastQuestionType = "moveTo";
+    
+}
+goToQuestion = () => {
     let lastTargetPlace = currentTargetPlaceIndex;
     for (let i = 0; i < 1000; i++){
         currentTargetPlaceIndex = basicRandom(0,checkPlaces.length-1)
         if(currentTargetPlaceIndex != lastTargetPlace) break;
     }
     questionElement.innerHTML = "go to " + checkPlaces[currentTargetPlaceIndex].word;
-    
+    lastQuestionType = "goTo";
+}
+
+
+newQuestion = () => {
+    if(moveAroundMode && lastQuestionType == "goTo"){
+        moveToQuestion();
+    }
+    else goToQuestion();
 }
 
 removeItemAll = (arr, value) => {
@@ -760,7 +843,11 @@ doCommands = (wordListArray) => {
             wordListArray.splice(i,1);
             i--;
         }
-
+        else if(wordListArray[i].substr(0,14).toLowerCase() == "movearoundmode"){
+            moveAroundMode = true;
+            wordListArray.splice(i,1);
+            i--;
+        }
     }
 }
 
