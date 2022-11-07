@@ -405,6 +405,16 @@ refreshScore = () => {
     scoreElement.style.fontSize = "10px";
 }
 
+refreshCheckPlaces = (room) => {
+    // write the O for all positions which is a check place
+    for(let i = 0; i < checkPlaces.length; i++){
+        if(checkPlaces[i].pickedUp == true) continue;
+        if(checkPlaces[i].room != currentPosition.room) continue;
+        let xx = checkPlaces[i].x;
+        let yy = checkPlaces[i].y;
+        room.xy[xx][yy] = "O";
+    }
+}
 
 
 displayMap = () => {
@@ -420,14 +430,7 @@ displayMap = () => {
         }
     }
 
-    // write the O for all positions which is a check place
-    for(let i = 0; i < checkPlaces.length; i++){
-        if(checkPlaces[i].pickedUp == true) continue;
-        if(checkPlaces[i].room != currentPosition.room) continue;
-        let xx = checkPlaces[i].x;
-        let yy = checkPlaces[i].y;
-        room.xy[xx][yy] = "O";
-    }
+    refreshCheckPlaces(room);
 
     // write the W for all positions which is a warp place
     for(let i=0; i < room.warps.length; i++){
@@ -549,7 +552,7 @@ moveToQuestion = () => {
     let x = checkPlaces[currentTargetPlaceIndex].x;
     let y = checkPlaces[currentTargetPlaceIndex].y;
     mapVar[room].xy[x][y] = "X";
-    displayMap();
+    refreshCheckPlaces(mapVar[room]);
     questionElement.innerHTML = "move " + checkPlaces[currentTargetPlaceIndex].word;
     questionElement.innerHTML += " to " + JSON.stringify(currentMoveToPlace);
     lastQuestionType = "moveTo";
