@@ -62,6 +62,7 @@ let currentMoveToPlace = null;
 let showPosition = false;
 let allowStacking = true;
 let numTriesSuitable = 10000;
+let moveToRate = 10;
 
 let mapVar = []
 let displayMapVar = []
@@ -595,7 +596,8 @@ goToQuestion = () => {
 
 
 newQuestion = () => {
-    if(moveAroundMode && lastQuestionType == "goTo"){
+    let r = basicRandom(0,moveToRate);
+    if(moveAroundMode && lastQuestionType == "goTo" && moveToRate == 0){
         moveToQuestion();
     }
     else goToQuestion();
@@ -881,6 +883,11 @@ doCommands = (wordListArray) => {
         }
         else if(wordListArray[i].substr(0,14).toLowerCase() == "movearoundmode"){
             moveAroundMode = true;
+            wordListArray.splice(i,1);
+            i--;
+        }
+        else if(wordListArray[i].substr(0,10).toLowerCase() == "movetorate"){
+            moveToRate = parseInt(wordListArray[i].substring(10));;
             wordListArray.splice(i,1);
             i--;
         }
