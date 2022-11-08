@@ -597,7 +597,7 @@ goToQuestion = () => {
 
 newQuestion = () => {
     let r = basicRandom(0,moveToRate);
-    if(moveAroundMode && lastQuestionType == "goTo" && moveToRate == 0){
+    if(moveAroundMode && lastQuestionType == "goTo" && r == 0){
         moveToQuestion();
     }
     else goToQuestion();
