@@ -60,6 +60,8 @@ let moveAroundMode = false;
 let lastQuestionType = null;
 let currentMoveToPlace = null;
 let showPosition = false;
+let allowStacking = true;
+let numTriesSuitable = 10000;
 
 let mapVar = []
 let displayMapVar = []
@@ -151,10 +153,10 @@ findSuitableMovePlace = () => {
     let randroom = basicRandom(0, numRooms-1);
     let randx = basicRandom(0,mapVar[randroom].mapBoundX-1);
     let randy = basicRandom(0,mapVar[randroom].mapBoundY-1);
-    for(let i = 0; i <= 1000; i++){
+    for(let i = 0; i <= 10000; i++){
         if(mapVar[randroom].xy[randx][randy] != "Z" || !preventWallOverwrite) {
             if(mapVar[randroom].xy[randx][randy] != "W") {
-                if(mapVar[randroom].xy[randx][randy] != "O") {
+                if(mapVar[randroom].xy[randx][randy] != "O" || allowStacking) {
                     break;
                 }
             }
@@ -164,33 +166,7 @@ findSuitableMovePlace = () => {
         randy = basicRandom(0,mapVar[randroom].mapBoundY-1);
     }
     
-    let randWord = "";
-    // make sure it's unique
-    let found = false;
-    for(let i = 0; i <= 1000; i++){
-        if(randchars){
-            for(let i = 0; i < numRandChars; i++){
-                randWord += randCharList[Math.floor(Math.random() * randCharList.length)];
-            }
-        }
-        else randWord = randomItem(wordDict);
-        let found = false;
-        for(let j = 0; j < checkPlaces.length; j++){
-            if(checkPlaces[j].word == randWord) {
-                found = true;
-                break;
-            }
-        }
-        if (found == false) {
-            // unique
-            return {x:randx,y:randy,room: randroom};
-            
-        }
-    }
-
-    // if it's a repeat after 1000 times, log it
-    feedbackElement.textContent = "unable to find suitable place to move item\n";
-    return;
+    return {x:randx,y:randy,room: randroom};
 }
 
 
