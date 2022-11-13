@@ -708,6 +708,7 @@ addRoom = () => {
         warpRoomNum = basicRandom(0,roomNum-1);
         addWarp(warpRoomNum,roomNum,false);
     }
+    numRooms++;
     if(allowHints){
         feedbackElement.textContent += "new room added:\n";
         feedbackElement.textContent += "warp from room " + warpRoomNum;
