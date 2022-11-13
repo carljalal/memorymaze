@@ -686,9 +686,9 @@ goodWallPure = (room,x,y) => {
     return true;
 }
 
-addRoom = (_minMapX,_maxMapX,_minMapY,_maxMapY) => {
-    let mapx = basicRandom(_minMapX,_maxMapX);
-    let mapy = basicRandom(_minMapY,_maxMapY);
+addRoom = () => {
+    let mapx = basicRandom(minMapX,maxMapX);
+    let mapy = basicRandom(minMapY,maxMapY);
     mapVar.push({xy:[],walls:[],places:[],warps:[],mapBoundX:mapx,mapBoundY:mapy});
     let roomNum = mapVar.length-1;
     for(let x = 0; x < mapx; x++){
