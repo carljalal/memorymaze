@@ -63,6 +63,8 @@ let showPosition = false;
 let allowStacking = true;
 let numTriesSuitable = 10000;
 let moveToRate = 10;
+let newRoomMode = false;
+let newRoomRate = 10;
 
 let mapVar = []
 let displayMapVar = []
@@ -338,6 +340,7 @@ checkAnswer = () => {
             && currentPosition.y == checkPlaces[currentTargetPlaceIndex].y
             && currentPosition.room == checkPlaces[currentTargetPlaceIndex].room){
                 if(basicRandom(0,addRate)==0) addCheckPlace();
+                if(newRoomMode && basicRandom(0,newRoomRate)==0) addRoom();
                 newQuestion();
                 correct = true;
             }
@@ -683,6 +686,34 @@ goodWallPure = (room,x,y) => {
     return true;
 }
 
+addRoom = (_minMapX,_maxMapX,_minMapY,_maxMapY) => {
+    let mapx = basicRandom(_minMapX,_maxMapX);
+    let mapy = basicRandom(_minMapY,_maxMapY);
+    mapVar.push({xy:[],walls:[],places:[],warps:[],mapBoundX:mapx,mapBoundY:mapy});
+    let roomNum = mapVar.length-1;
+    for(let x = 0; x < mapx; x++){
+        mapVar[roomNum].xy.push([]);
+        for(let y = 0; y < mapy; y++){
+            mapVar[roomNum].xy[x].push("X");
+        }
+    }
+    if(allowWalls) wallAlgorithm(mapVar[roomNum]);
+    let warpRoomNum = -1;
+    if(bidirectionalWarps){
+        warpRoomNum = basicRandom(0,roomNum-1);
+        addWarp(roomNum,warpRoomNum,true);
+    }
+    else{
+        addWarp(roomNum,basicRandom(0,roomNum-1),false);
+        warpRoomNum = basicRandom(0,roomNum-1);
+        addWarp(warpRoomNum,roomNum,false);
+    }
+    if(allowHints){
+        feedbackElement.textContent += "new room added:\n";
+        feedbackElement.textContent += "warp from room " + warpRoomNum;
+    }
+}
+
 initializeRooms = (_numRooms,_minMapX,_maxMapX,_minMapY,_maxMapY) => {
     for(let i = 0; i < _numRooms; i++){
         let mapx = basicRandom(_minMapX,_maxMapX);
@@ -837,27 +868,27 @@ doCommands = (wordListArray) => {
             i--;
         }
         else if(wordListArray[i].substr(0,18).toLowerCase() == "numstartingplaces "){
-            numStartingPlaces = parseInt(wordListArray[i].substring(17));
+            numStartingPlaces = parseInt(wordListArray[i].substring(18));
             wordListArray.splice(i,1);
             i--;
         }
         else if(wordListArray[i].substr(0,8).toLowerCase() == "maxmapx "){
-            maxMapX = parseInt(wordListArray[i].substring(5));
+            maxMapX = parseInt(wordListArray[i].substring(8));
             wordListArray.splice(i,1);
             i--;
         }
         else if(wordListArray[i].substr(0,8).toLowerCase() == "maxmapy "){
-            maxMapY = parseInt(wordListArray[i].substring(5));
+            maxMapY = parseInt(wordListArray[i].substring(8));
             wordListArray.splice(i,1);
             i--;
         }
         else if(wordListArray[i].substr(0,8).toLowerCase() == "minmapx "){
-            minMapX = parseInt(wordListArray[i].substring(5));
+            minMapX = parseInt(wordListArray[i].substring(8));
             wordListArray.splice(i,1);
             i--;
         }
         else if(wordListArray[i].substr(0,8).toLowerCase() == "minmapy "){
-            minMapY = parseInt(wordListArray[i].substring(5));
+            minMapY = parseInt(wordListArray[i].substring(8));
             wordListArray.splice(i,1);
             i--;
         }
@@ -887,7 +918,17 @@ doCommands = (wordListArray) => {
             i--;
         }
         else if(wordListArray[i].substr(0,10).toLowerCase() == "movetorate"){
-            moveToRate = parseInt(wordListArray[i].substring(10));;
+            moveToRate = parseInt(wordListArray[i].substring(10));
+            wordListArray.splice(i,1);
+            i--;
+        }
+        else if(wordListArray[i].substr(0,11).toLowerCase() == "newroommode"){
+            newRoomMode = true;
+            wordListArray.splice(i,1);
+            i--;
+        }
+        else if(wordListArray[i].substr(0,11).toLowerCase() == "newroomrate"){
+            newRoomRate = parseInt(wordListArray[i].substring(11));
             wordListArray.splice(i,1);
             i--;
         }
