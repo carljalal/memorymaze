@@ -741,7 +741,7 @@ addWarp = (roomStart, roomEnd, twoway = true) => {
                     let randxEnd = basicRandom(0,mapVar[roomEnd].mapBoundX-1);
                     let randyEnd = basicRandom(0,mapVar[roomEnd].mapBoundY-1);
                     if(mapVar[roomEnd].xy[randxEnd][randyEnd] != "Z" || !preventWallOverwrite) {
-                        if(mapVar[roomEnd].xy[randxEnd][randyEnd] != "W" && mapVar[roomEnd].xy[randxEnd][randyEnd] != "O")) {
+                        if(mapVar[roomEnd].xy[randxEnd][randyEnd] != "W" && mapVar[roomEnd].xy[randxEnd][randyEnd] != "O") {
                             mapVar[roomStart].xy[randxStart][randyStart] = "W";
                             mapVar[roomStart].warps.push({x:randxStart,y:randyStart,toRoom:roomEnd,
                                 toX: randxEnd, toY: randyEnd});
