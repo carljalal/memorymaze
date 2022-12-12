@@ -376,6 +376,13 @@ checkAnswer = (c = 0) => {
     }
 }
 
+checkAnswers = () => {
+    if(answerOutOfOrder){
+        for(let i = 0; i < instructionOrder.length;i++) checkAnswer(i);
+    }
+    else checkAnswer(0);
+}
+
 checkElement.onclick = () => {
     let room = currentPosition.room;
     let x = currentPosition.x;
@@ -383,7 +390,7 @@ checkElement.onclick = () => {
     if(mapVar[room].xy[x][y] == "W"){
         goInside(room, x, y);
     }
-    else checkAnswer(); 
+    else checkAnswers(); 
 }
 
 refreshMapStyle = () => {
@@ -1063,7 +1070,7 @@ document.body.addEventListener("keydown", (event)=>{
         if(mapVar[room].xy[x][y] == "W"){
             goInside(room, x, y);
         }
-        else checkAnswer(); 
+        else checkAnswers(); 
     }
     if((event.key == "ArrowUp" || event.key =="w") && sessionStarted) moveUp(); 
     if((event.key == "ArrowDown" || event.key =="s") && sessionStarted) moveDown(); 
