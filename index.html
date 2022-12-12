@@ -20,7 +20,8 @@ document.body.addEventListener('dblclick', function(event) {
 let wordDict = [];
 let checkPlaces = [];
 let lastCheckPlace = {};
-let currentTargetPlaceIndex = 0;
+let instructionOrder = [];
+let currentPosition = {x: 0, y: 0, room:0};
 let mapBoundX = 10;
 let mapBoundY = 10;
 let noTyping = true;
@@ -65,6 +66,8 @@ let numTriesSuitable = 10000;
 let moveToRate = 10;
 let newRoomMode = false;
 let newRoomRate = 10;
+let numIncomingInstructions = 2;
+let answerOutOfOrder = false;
 
 let mapVar = []
 let displayMapVar = []
@@ -320,8 +323,6 @@ for(let i = 0; i < 5; i++){
 */
 
 
-let currentPosition = {x: 0, y: 0, room:0};
-
 
 isInsideCheckPlaces = (word) => {
     for(let i = 0; i < checkPlaces.length; i++){
@@ -332,13 +333,13 @@ isInsideCheckPlaces = (word) => {
 
 
 
-checkAnswer = () => {
+checkAnswer = (c = 0) => {
     correct = false;
-    if(lastQuestionType == "goTo"){
+    if(instructionOrder[c].questionType == "goTo"){
         if(isInsideCheckPlaces(answerElement.value) || noTyping == true){
-            if(currentPosition.x == checkPlaces[currentTargetPlaceIndex].x 
-            && currentPosition.y == checkPlaces[currentTargetPlaceIndex].y
-            && currentPosition.room == checkPlaces[currentTargetPlaceIndex].room){
+            if(currentPosition.x == checkPlaces[instructionOrder[c].targetPlaceIndex].x 
+            && currentPosition.y == checkPlaces[instructionOrder[c].targetPlaceIndex].y
+            && currentPosition.room == checkPlaces[instructionOrder[c].targetPlaceIndex].room){
                 if(basicRandom(0,addRate)==0) addCheckPlace();
                 if(newRoomMode && basicRandom(0,newRoomRate)==0) addRoom();
                 newQuestion();
@@ -346,15 +347,15 @@ checkAnswer = () => {
             }
         }
     }
-    if(lastQuestionType == "moveTo"){
+    if(instructionOrder[c].questionType == "moveTo"){
         if(isInsideCheckPlaces(answerElement.value) || noTyping == true){
-            if(currentPosition.x == currentMoveToPlace.x 
-            && currentPosition.y == currentMoveToPlace.y
+            if(currentPosition.x == instructionOrder[c].moveToX 
+            && currentPosition.y == instructionOrder[c].moveToY
             && currentPosition.room == currentMoveToPlace.room){
-                checkPlaces[currentTargetPlaceIndex].x = currentMoveToPlace.x;
-                checkPlaces[currentTargetPlaceIndex].y = currentMoveToPlace.y;
-                checkPlaces[currentTargetPlaceIndex].room = currentMoveToPlace.room;
-                checkPlaces[currentTargetPlaceIndex].pickedUp = false;
+                checkPlaces[instructionOrder[c].targetPlaceIndex].x = instructionOrder[c].moveToX;
+                checkPlaces[instructionOrder[c].targetPlaceIndex].y = instructionOrder[c].moveToY;
+                checkPlaces[instructionOrder[c].targetPlaceIndex].room = instructionOrder[c].moveToRoom;
+                checkPlaces[instructionOrder[c].targetPlaceIndex].pickedUp = false;
                 refreshWordsInside();
                 newQuestion();
                 correct = true;
@@ -573,37 +574,76 @@ downElement.onclick = () => {
     moveDown();
 }
 
-moveToQuestion = () => {
-    currentMoveToPlace = findSuitableMovePlace();
-    checkPlaces[currentTargetPlaceIndex].pickedUp = true;
-    let room = checkPlaces[currentTargetPlaceIndex].room;
-    let x = checkPlaces[currentTargetPlaceIndex].x;
-    let y = checkPlaces[currentTargetPlaceIndex].y;
-    mapVar[room].xy[x][y] = "X";
-    refreshCheckPlaces(mapVar[room]);
-    refreshWordsInside();
-    questionElement.innerHTML = "move " + checkPlaces[currentTargetPlaceIndex].word;
-    questionElement.innerHTML += " to " + JSON.stringify(currentMoveToPlace);
-    lastQuestionType = "moveTo";
-    
-}
-goToQuestion = () => {
-    let lastTargetPlace = currentTargetPlaceIndex;
-    for (let i = 0; i < 1000; i++){
-        currentTargetPlaceIndex = basicRandom(0,checkPlaces.length-1)
-        if(currentTargetPlaceIndex != lastTargetPlace) break;
+questionRefresh = () => {
+    if(instructionOrder[0].questionType == "moveTo"){
+        checkPlaces[instructionOrder[0].targetPlaceIndex].pickedUp = true;
+        let room = checkPlaces[instructionOrder[0].targetPlaceIndex].room;
+        let x = checkPlaces[instructionOrder[0].targetPlaceIndex].x;
+        let y = checkPlaces[instructionOrder[0].targetPlaceIndex].y;
+        mapVar[room].xy[x][y] = "X";
+        refreshCheckPlaces(mapVar[room]);
+        refreshWordsInside();
     }
-    questionElement.innerHTML = "go to " + checkPlaces[currentTargetPlaceIndex].word;
-    lastQuestionType = "goTo";
+
+    questionElement.innerHTML = "";
+    for(let i = 0; i < instructionOrder.length; i++){
+        if(instructionOrder[i].questionType == "moveTo"){
+            questionElement.innerHTML += "move " + checkPlaces[instructionOrder[i].targetPlaceIndex].word;
+            questionElement.innerHTML += " to " + JSON.stringify(currentMoveToPlace);
+        }
+        if (instructionOrder[i].questionType == "goTo"){
+            questionElement.innerHTML += "go to " + checkPlaces[instructionOrder[i].targetPlaceIndex].word;
+        }
+        if (i < instructionOrder.length -1) questionElement.innerHTML += "<br>";
+    }
 }
 
+moveToQuestion = () => {
+    let moveToPlace = findSuitableMovePlace();
+    let targetPlaceIndex = instructionOrder[instructionOrder.length-1].targetPlaceIndex;
+    instructionOrder.push({questionType: "moveTo",moveToX: moveToPlace.x,moveToY: moveToPlace.y, moveToRoom: moveToPlace.room,targetPlaceIndex: targetPlaceIndex});
+}
 
-newQuestion = () => {
+goToQuestion = () => {
+    let targetPlaceIndex = basicRandom(0,checkPlaces.length-1);
+    if (instructionOrder.length < 1) instructionOrder.push({targetPlaceIndex:targetPlaceIndex,questionType:"goTo"}); // nothing to compare to
+
+    // try to make different target than previous instruction
+    for (let i = 0; i < 1000; i++){
+        if(targetPlaceIndex != instructionOrder[instructionOrder.length-1].targetPlaceIndex) { // different from last
+            instructionOrder.push({targetPlaceIndex:targetPlaceIndex,questionType:"goTo"});
+            return;
+        }
+        targetPlaceIndex = basicRandom(0,checkPlaces.length-1); // try again
+    }
+    // push same as previous question, failed to change
+    instructionOrder.push({targetPlaceIndex:instructionOrder[instructionOrder.length-1].targetPlaceIndex,questionType:"goTo"});
+}
+
+getNewQuestionKind = () => {
+    // pick for chance of moveto question
     let r = basicRandom(0,moveToRate);
-    if(moveAroundMode && lastQuestionType == "goTo" && r == 0){
+
+    // first question nothing is picked up so can't be moveto
+    if(instructionOrder.length < 1) {
+        goToQuestion();
+        return;
+    }
+
+    // moveto requires previous question be a goTo for pickup
+    if(moveAroundMode && instructionOrder[instructionOrder.length-1].questionType == "goTo" && r == 0){
         moveToQuestion();
     }
     else goToQuestion();
+}
+
+newQuestion = (answered = true) => {
+    while (instructionOrder.length < numIncomingInstructions) getNewQuestionKind();
+    if(answered) questionAnswered();
+    questionRefresh();
+}
+questionAnswered = () => {
+    instructionOrder.splice(0,1);
 }
 
 removeItemAll = (arr, value) => {
@@ -933,6 +973,16 @@ doCommands = (wordListArray) => {
             wordListArray.splice(i,1);
             i--;
         }
+        else if(wordListArray[i].substr(0,23).toLowerCase() == "numincominginstructions"){
+            numIncomingInstructions = parseInt(wordListArray[i].substring(23));
+            wordListArray.splice(i,1);
+            i--;
+        }
+        else if(wordListArray[i].substr(0,18).toLowerCase() == "answerorderoforder"){
+            answerorderoforder = true;
+            wordListArray.splice(i,1);
+            i--;
+        }
     }
 }
 
@@ -984,7 +1034,7 @@ initElement.onclick = () => {
 
     currentPosition = {x: 0, y: 0, room:0};
     for(let i = 1; i <= numStartingPlaces; i++) addCheckPlace();
-    newQuestion();
+    newQuestion(false);
     displayMap();
     
 }
