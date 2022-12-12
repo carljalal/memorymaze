@@ -58,8 +58,6 @@ let maxMapX = 8;
 let maxMapY = 8;
 let bidirectionalWarps = true;
 let moveAroundMode = false;
-let lastQuestionType = null;
-let currentMoveToPlace = null;
 let showPosition = false;
 let allowStacking = true;
 let numTriesSuitable = 10000;
@@ -642,8 +640,8 @@ fillQuestions = () => {
 }
 
 newQuestion = (answered = true) => {
+    getNewQuestionKind();
     if(answered) {
-        getNewQuestionKind();
         questionAnswered();
     }
     questionRefresh();
