@@ -637,9 +637,15 @@ getNewQuestionKind = () => {
     else goToQuestion();
 }
 
+fillQuestions = () => {
+    while (instructionOrder.length < numIncomingInstructions) newQuestion(false);
+}
+
 newQuestion = (answered = true) => {
-    while (instructionOrder.length < numIncomingInstructions) getNewQuestionKind();
-    if(answered) questionAnswered();
+    if(answered) {
+        getNewQuestionKind();
+        questionAnswered();
+    }
     questionRefresh();
 }
 questionAnswered = () => {
@@ -1034,7 +1040,7 @@ initElement.onclick = () => {
 
     currentPosition = {x: 0, y: 0, room:0};
     for(let i = 1; i <= numStartingPlaces; i++) addCheckPlace();
-    newQuestion(false);
+    fillQuestions();
     displayMap();
     
 }
