@@ -341,8 +341,17 @@ isInsideCheckPlaces = (word,c) => {
 
 
 
+
 checkAnswer = (c = 0) => {
     correct = false;
+    if(instructionOrder[c].questionType == "math"){
+        if(answerElement.value == instructionOrder[c].answer){
+            if(basicRandom(0,addRate)==0) addCheckPlace();
+            if(newRoomMode && basicRandom(0,newRoomRate)==0) addRoom();
+            newQuestion(true, c);
+            correct = true;
+        }
+    }
     if(instructionOrder[c].questionType == "goTo"){
         if(isInsideCheckPlaces(answerElement.value,c) || noTyping == true){
             if(currentPosition.x == checkPlaces[instructionOrder[c].targetPlaceIndex].x 
@@ -350,7 +359,7 @@ checkAnswer = (c = 0) => {
             && currentPosition.room == checkPlaces[instructionOrder[c].targetPlaceIndex].room){
                 if(basicRandom(0,addRate)==0) addCheckPlace();
                 if(newRoomMode && basicRandom(0,newRoomRate)==0) addRoom();
-                newQuestion();
+                newQuestion(true, c);
                 correct = true;
             }
         }
@@ -365,7 +374,7 @@ checkAnswer = (c = 0) => {
                 checkPlaces[instructionOrder[c].targetPlaceIndex].room = instructionOrder[c].moveToRoom;
                 checkPlaces[instructionOrder[c].targetPlaceIndex].pickedUp = false;
                 refreshWordsInside();
-                newQuestion();
+                newQuestion(true, c);
                 correct = true;
             }
         }
@@ -610,6 +619,9 @@ questionRefresh = () => {
         if (instructionOrder[i].questionType == "goTo"){
             questionElement.innerHTML += "go to " + checkPlaces[instructionOrder[i].targetPlaceIndex].word;
         }
+        if (instructionOrder[i].questionType == "goTo"){
+            questionElement.innerHTML += "calc " + instructionOrder[i].question;
+        }
         if (i < instructionOrder.length -1) questionElement.innerHTML += "<br>";
     }
 }
@@ -685,15 +697,15 @@ fillQuestions = () => {
     while (instructionOrder.length < numIncomingInstructions) newQuestion(false);
 }
 
-newQuestion = (answered = true) => {
+newQuestion = (answered = true, instruction_id = 0) => {
     getNewQuestionKind();
     if(answered) {
-        questionAnswered();
+        questionAnswered(instruction_id);
     }
     questionRefresh();
 }
-questionAnswered = () => {
-    instructionOrder.splice(0,1);
+questionAnswered = (instruction_id = 0) => {
+    instructionOrder.splice(instruction_id,1);
 }
 
 removeItemAll = (arr, value) => {
@@ -1133,8 +1145,8 @@ document.body.addEventListener("keydown", (event)=>{
 });
 
 positionMatchingInstruction = (i) => {
-    if((currentPosition.x == instructionOrder[i].x) && (currentPosition.y == instructionOrder[i].y) && (currentPosition.room == instructionOrder[i].room)) return true;
     if(instructionOrder[i].questionType == "math") return true;
+    if((currentPosition.x == instructionOrder[i].x) && (currentPosition.y == instructionOrder[i].y) && (currentPosition.room == instructionOrder[i].room)) return true;
     return false;
 }
 
