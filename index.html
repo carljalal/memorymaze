@@ -67,6 +67,9 @@ let newRoomRate = 10;
 let numIncomingInstructions = 4;
 let answerOutOfOrder = false;
 let answering = false;
+let mathQuestions = true;
+let mathQuestionsRate = 5;
+let mathQuestionsDepth = 4;
 
 let mapVar = []
 let displayMapVar = []
@@ -617,8 +620,29 @@ moveToQuestion = () => {
     instructionOrder.push({questionType: "moveTo",moveToX: moveToPlace.x,x:moveToPlace.x,y:moveToPlace.y,moveToY: moveToPlace.y,room:moveToPlace.room, moveToRoom: moveToPlace.room,targetPlaceIndex: targetPlaceIndex});
 }
 
-makeGoToQuestion = (placeIndex) => {
+packGoToQuestion = (placeIndex) => {
     return {x: checkPlaces[placeIndex].x, y: checkPlaces[placeIndex].y, room: checkPlaces[placeIndex].room, questionType:"goTo"};
+}
+
+packMathQuestion = () => {
+    let answer = 0;
+    let question = "";
+    for(let i = 0; i < mathQuestionsDepth; i++){
+        if (i == 0) {
+            answer = basicRandom(0,99);
+            question += answer.toString();
+        }
+        else {
+            let num = basicRandom(0,99);
+            answer += num;
+            question += " + " + num.toString();
+        }
+    }
+    return {answer: answer, question: question, questionType: "math"};
+}
+
+mathQuestion = () => {
+    instructionOrder.push(packMathQuestion());
 }
 
 goToQuestion = () => {
@@ -628,30 +652,33 @@ goToQuestion = () => {
     // try to make different target than previous instruction
     for (let i = 0; i < 1000; i++){
         if(targetPlaceIndex != instructionOrder[instructionOrder.length-1].targetPlaceIndex) { // different from last
-            instructionOrder.push(makeGoToQuestion(targetPlaceIndex));
+            instructionOrder.push(packGoToQuestion(targetPlaceIndex));
             return;
         }
         targetPlaceIndex = basicRandom(0,checkPlaces.length-1); // try again
     }
     // push same as previous question, failed to change
-    instructionOrder.push(makeGoToQuestion(targetPlaceIndex));
+    instructionOrder.push(packGoToQuestion(targetPlaceIndex));
 }
 
 getNewQuestionKind = () => {
     // pick for chance of moveto question
-    let r = basicRandom(0,moveToRate);
+    let r = Math.random();
+    let mathChance = 1.0 / mathQuestionsRate;
+    let moveToChance = 1.0 / moveToRate;
 
-    // first question nothing is picked up so can't be moveto
-    if(instructionOrder.length < 1) {
-        goToQuestion();
+    // moveto requires previous question be a goTo for pickup
+    if(moveAroundMode && instructionOrder[instructionOrder.length-1].questionType == "goTo" && r < moveToRate && (instructionOrder.length < 1)){
+        moveToQuestion();
         return;
     }
 
-    // moveto requires previous question be a goTo for pickup
-    if(moveAroundMode && instructionOrder[instructionOrder.length-1].questionType == "goTo" && r == 0){
-        moveToQuestion();
+    if(r >= moveToRate && r < moveToRate + mathChance) {
+        mathQuestion();
+        return;
     }
-    else goToQuestion();
+
+    goToQuestion();
 }
 
 fillQuestions = () => {
@@ -1011,6 +1038,11 @@ doCommands = (wordListArray) => {
             wordListArray.splice(i,1);
             i--;
         }
+        else if(wordListArray[i].substr(0,6).toLowerCase() == "nomath"){
+            mathQuestions = false;
+            wordListArray.splice(i,1);
+            i--;
+        }
     }
 }
 
@@ -1100,14 +1132,20 @@ document.body.addEventListener("keydown", (event)=>{
     if (noTyping == false) answerElement.value = "";
 });
 
+positionMatchingInstruction = (i) => {
+    if((currentPosition.x == instructionOrder[i].x) && (currentPosition.y == instructionOrder[i].y) && (currentPosition.room == instructionOrder[i].room)) return true;
+    if(instructionOrder[i].questionType == "math") return true;
+    return false;
+}
+
 positionMatching = () => {
     // in order only
-    if((currentPosition.x == instructionOrder[0].x) && (currentPosition.y == instructionOrder[0].y) && (currentPosition.room == instructionOrder[0].room)) return true;
+    if(positionMatchingInstruction(0)) return true;
     if(answerOutOfOrder == false) return false; 
     
     // including out of order possibility
     for(let i = 1; i < instructionOrder.length; i++){
-        if((currentPosition.x == instructionOrder[i].x) && (currentPosition.y == instructionOrder[i].y) && (currentPosition.room == instructionOrder[i].room)) return true;
+        if(positionMatchingInstruction(i)) return true;
     }
     return false;
 }
