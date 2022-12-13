@@ -602,7 +602,7 @@ questionRefresh = () => {
     for(let i = 0; i < instructionOrder.length; i++){
         if(instructionOrder[i].questionType == "moveTo"){
             questionElement.innerHTML += "move " + checkPlaces[instructionOrder[i].targetPlaceIndex].word;
-            questionElement.innerHTML += " to " + JSON.stringify(currentMoveToPlace);
+            questionElement.innerHTML += " to room:" + instructionOrder[i].room + ", x:" + instructionOrder[i].x + ", y:" + instructionOrder[i].y;
         }
         if (instructionOrder[i].questionType == "goTo"){
             questionElement.innerHTML += "go to " + checkPlaces[instructionOrder[i].targetPlaceIndex].word;
@@ -614,7 +614,7 @@ questionRefresh = () => {
 moveToQuestion = () => {
     let moveToPlace = findSuitableMovePlace();
     let targetPlaceIndex = instructionOrder[instructionOrder.length-1].targetPlaceIndex;
-    instructionOrder.push({questionType: "moveTo",moveToX: moveToPlace.x,moveToY: moveToPlace.y, moveToRoom: moveToPlace.room,targetPlaceIndex: targetPlaceIndex});
+    instructionOrder.push({questionType: "moveTo",moveToX: moveToPlace.x,x:moveToPlace.x,y:moveToPlace.y,moveToY: moveToPlace.y,room:moveToPlace.room, moveToRoom: moveToPlace.room,targetPlaceIndex: targetPlaceIndex});
 }
 
 goToQuestion = () => {
