@@ -682,11 +682,12 @@ getNewQuestionKind = () => {
     let moveToChance = 1.0 / moveToRate;
 
     // moveto requires previous question be a goTo for pickup
-    if(moveAroundMode && instructionOrder[instructionOrder.length-1].questionType == "goTo" && r < moveToChance && (instructionOrder.length < 1)){
-        moveToQuestion();
-        return;
+    if(instructionOrder.length > 0){
+        if(moveAroundMode && instructionOrder[instructionOrder.length-1].questionType == "goTo" && r < moveToChance && (instructionOrder.length < 1)){
+            moveToQuestion();
+            return;
+        }
     }
-
     if(r >= moveToChance && r < moveToChance + mathChance) {
         mathQuestion();
         return;
