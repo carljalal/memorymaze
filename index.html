@@ -641,11 +641,11 @@ packMathQuestion = () => {
     let question = "";
     for(let i = 0; i < mathQuestionsDepth; i++){
         if (i == 0) {
-            answer = basicRandom(0,99);
+            answer = basicRandom(0,9);
             question += answer.toString();
         }
         else {
-            let num = basicRandom(0,99);
+            let num = basicRandom(0,9);
             answer += num;
             question += " + " + num.toString();
         }
