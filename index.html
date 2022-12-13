@@ -1017,8 +1017,7 @@ initElement.onclick = () => {
     answerElement.placeholder = "type here and hit check!"
     hideShowNonInitButtons("inline-block");
     refreshMapStyle();
-    if (noTyping == true) answerElement.style.display = "none";
-    else answerElement.style.display = "";
+    
     initElement.style.display = "none"
 
     wordListString = answerElement.value
@@ -1026,6 +1025,9 @@ initElement.onclick = () => {
     let wordListArray = wordListString.split("\n");
     doCommands(wordListArray);
     wordDict = wordListArray;
+
+    if (noTyping == true) answerElement.style.display = "none";
+    else answerElement.style.display = "";
     
     answerElement.value = "";
     answerElement.cols = 50
@@ -1076,7 +1078,8 @@ goInside = (room, x, y) => {
     return wentInside;
 }
 
-mapElement.addEventListener("keydown", (event)=>{
+document.body.addEventListener("keydown", (event)=>{
+    if(positionMatching()) return;
     if(event.key == "Enter" && sessionStarted) {
         let room = currentPosition.room;
         let x = currentPosition.x;
@@ -1106,6 +1109,7 @@ positionMatching = () => {
 }
 
 answerElement.addEventListener("keydown", (event)=>{
+    if(!sessionStarted) return;
     if((event.key == "Enter") && sessionStarted) {
         checkAnswers();
         event.preventDefault();
