@@ -66,6 +66,7 @@ let newRoomMode = false;
 let newRoomRate = 10;
 let numIncomingInstructions = 4;
 let answerOutOfOrder = false;
+let answering = false;
 
 let mapVar = []
 let displayMapVar = []
@@ -321,11 +322,17 @@ for(let i = 0; i < 5; i++){
 */
 
 
-
+/*
 isInsideCheckPlaces = (word) => {
     for(let i = 0; i < checkPlaces.length; i++){
         if(checkPlaces[i].word == word) return true;
     }
+    return false;
+}
+*/
+
+isInsideCheckPlaces = (word,c) => {
+    if(checkPlaces[instructionOrder[c].targetPlaceIndex].word == word) return true;
     return false;
 }
 
@@ -334,7 +341,7 @@ isInsideCheckPlaces = (word) => {
 checkAnswer = (c = 0) => {
     correct = false;
     if(instructionOrder[c].questionType == "goTo"){
-        if(isInsideCheckPlaces(answerElement.value) || noTyping == true){
+        if(isInsideCheckPlaces(answerElement.value,c) || noTyping == true){
             if(currentPosition.x == checkPlaces[instructionOrder[c].targetPlaceIndex].x 
             && currentPosition.y == checkPlaces[instructionOrder[c].targetPlaceIndex].y
             && currentPosition.room == checkPlaces[instructionOrder[c].targetPlaceIndex].room){
@@ -346,7 +353,7 @@ checkAnswer = (c = 0) => {
         }
     }
     if(instructionOrder[c].questionType == "moveTo"){
-        if(isInsideCheckPlaces(answerElement.value) || noTyping == true){
+        if(isInsideCheckPlaces(answerElement.value,c) || noTyping == true){
             if(currentPosition.x == instructionOrder[c].moveToX 
             && currentPosition.y == instructionOrder[c].moveToY
             && currentPosition.room == currentMoveToPlace.room){
@@ -994,6 +1001,11 @@ doCommands = (wordListArray) => {
             wordListArray.splice(i,1);
             i--;
         }
+        else if(wordListArray[i].substr(0,6).toLowerCase() == "typing"){
+            noTyping = false;
+            wordListArray.splice(i,1);
+            i--;
+        }
     }
 }
 
@@ -1062,7 +1074,7 @@ goInside = (room, x, y) => {
     return wentInside;
 }
 
-document.body.addEventListener("keydown", (event)=>{
+mapElement.addEventListener("keydown", (event)=>{
     if(event.key == "Enter" && sessionStarted) {
         let room = currentPosition.room;
         let x = currentPosition.x;
@@ -1076,7 +1088,34 @@ document.body.addEventListener("keydown", (event)=>{
     if((event.key == "ArrowDown" || event.key =="s") && sessionStarted) moveDown(); 
     if((event.key == "ArrowLeft" || event.key =="a") && sessionStarted) moveLeft(); 
     if((event.key == "ArrowRight" || event.key =="d") && sessionStarted) moveRight(); 
-})
+    if (noTyping == false) answerElement.value = "";
+});
+
+positionMatching = () => {
+    // in order only
+    if((currentPosition.x == checkPlaces[instructionOrder[0].targetPlaceIndex].x) && (currentPosition.y == checkPlaces[instructionOrder[0].targetPlaceIndex].y) && (currentPosition.room == checkPlaces[instructionOrder[0].targetPlaceIndex].room)) return true;
+    if(answerOutOfOrder == false) return false; 
+    
+    // including out of order possibility
+    for(let i = 1; i < instructionOrder.length; i++){
+        if((currentPosition.x == checkPlaces[instructionOrder[i].targetPlaceIndex].x) && (currentPosition.y == checkPlaces[instructionOrder[i].targetPlaceIndex].y) && (currentPosition.room == checkPlaces[instructionOrder[i].targetPlaceIndex].room)) return true;
+    }
+    return false;
+}
+
+answerElement.addEventListener("keydown", (event)=>{
+    if((event.key == "Enter") && sessionStarted) {
+        checkAnswers();
+        event.preventDefault();
+        answerElement.value = "";
+    }
+    else {
+        if(positionMatching() == false) {
+            event.preventDefault();
+            answerElement.value = "";
+        }
+    }
+});
 
 
 </script>
