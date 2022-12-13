@@ -617,6 +617,10 @@ moveToQuestion = () => {
     instructionOrder.push({questionType: "moveTo",moveToX: moveToPlace.x,x:moveToPlace.x,y:moveToPlace.y,moveToY: moveToPlace.y,room:moveToPlace.room, moveToRoom: moveToPlace.room,targetPlaceIndex: targetPlaceIndex});
 }
 
+makeGoToQuestion = (placeIndex) => {
+    return {x: checkPlaces[placeIndex].x, y: checkPlaces[placeIndex].y, room: checkPlaces[placeIndex].room, questionType:"goTo"};
+}
+
 goToQuestion = () => {
     let targetPlaceIndex = basicRandom(0,checkPlaces.length-1);
     if (instructionOrder.length < 1) instructionOrder.push({targetPlaceIndex:targetPlaceIndex,questionType:"goTo"}); // nothing to compare to
@@ -624,13 +628,13 @@ goToQuestion = () => {
     // try to make different target than previous instruction
     for (let i = 0; i < 1000; i++){
         if(targetPlaceIndex != instructionOrder[instructionOrder.length-1].targetPlaceIndex) { // different from last
-            instructionOrder.push({targetPlaceIndex:targetPlaceIndex,questionType:"goTo"});
+            instructionOrder.push(makeGoToQuestion(targetPlaceIndex));
             return;
         }
         targetPlaceIndex = basicRandom(0,checkPlaces.length-1); // try again
     }
     // push same as previous question, failed to change
-    instructionOrder.push({targetPlaceIndex:instructionOrder[instructionOrder.length-1].targetPlaceIndex,questionType:"goTo"});
+    instructionOrder.push(makeGoToQuestion(targetPlaceIndex));
 }
 
 getNewQuestionKind = () => {
@@ -1098,12 +1102,12 @@ document.body.addEventListener("keydown", (event)=>{
 
 positionMatching = () => {
     // in order only
-    if((currentPosition.x == checkPlaces[instructionOrder[0].targetPlaceIndex].x) && (currentPosition.y == checkPlaces[instructionOrder[0].targetPlaceIndex].y) && (currentPosition.room == checkPlaces[instructionOrder[0].targetPlaceIndex].room)) return true;
+    if((currentPosition.x == instructionOrder[0].x) && (currentPosition.y == instructionOrder[0].y) && (currentPosition.room == instructionOrder[0].room)) return true;
     if(answerOutOfOrder == false) return false; 
     
     // including out of order possibility
     for(let i = 1; i < instructionOrder.length; i++){
-        if((currentPosition.x == checkPlaces[instructionOrder[i].targetPlaceIndex].x) && (currentPosition.y == checkPlaces[instructionOrder[i].targetPlaceIndex].y) && (currentPosition.room == checkPlaces[instructionOrder[i].targetPlaceIndex].room)) return true;
+        if((currentPosition.x == instructionOrder[i].x) && (currentPosition.y == instructionOrder[i].y) && (currentPosition.room == instructionOrder[i].room)) return true;
     }
     return false;
 }
