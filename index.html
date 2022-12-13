@@ -435,7 +435,8 @@ refreshScore = () => {
     text += "<br>words in use: " + checkPlaces.length;
     if (randchars) text += "<br>total words: " + checkPlaces.length;
     else text += "<br>total words: " + wordDict.length;
-    if (lastQuestionType == "moveTo") text += "<br>currentposition: " + JSON.stringify(currentPosition);
+    //if (lastQuestionType == "moveTo") 
+    text += "<br>currentposition: " + JSON.stringify(currentPosition);
     scoreElement.innerHTML = text;
     scoreElement.style.fontFamily = "Verdana";
     scoreElement.style.fontSize = "10px";
@@ -1016,7 +1017,8 @@ initElement.onclick = () => {
     answerElement.placeholder = "type here and hit check!"
     hideShowNonInitButtons("inline-block");
     refreshMapStyle();
-    if (noTyping == true) answerElement.style.display = "none"
+    if (noTyping == true) answerElement.style.display = "none";
+    else answerElement.style.display = "";
     initElement.style.display = "none"
 
     wordListString = answerElement.value
