@@ -619,7 +619,7 @@ questionRefresh = () => {
         if (instructionOrder[i].questionType == "goTo"){
             questionElement.innerHTML += "go to " + checkPlaces[instructionOrder[i].targetPlaceIndex].word;
         }
-        if (instructionOrder[i].questionType == "goTo"){
+        if (instructionOrder[i].questionType == "math"){
             questionElement.innerHTML += "calc " + instructionOrder[i].question;
         }
         if (i < instructionOrder.length -1) questionElement.innerHTML += "<br>";
@@ -633,7 +633,7 @@ moveToQuestion = () => {
 }
 
 packGoToQuestion = (placeIndex) => {
-    return {x: checkPlaces[placeIndex].x, y: checkPlaces[placeIndex].y, room: checkPlaces[placeIndex].room, questionType:"goTo"};
+    return {targetPlaceIndex: placeIndex, x: checkPlaces[placeIndex].x, y: checkPlaces[placeIndex].y, room: checkPlaces[placeIndex].room, questionType:"goTo"};
 }
 
 packMathQuestion = () => {
@@ -659,8 +659,10 @@ mathQuestion = () => {
 
 goToQuestion = () => {
     let targetPlaceIndex = basicRandom(0,checkPlaces.length-1);
-    if (instructionOrder.length < 1) instructionOrder.push({targetPlaceIndex:targetPlaceIndex,questionType:"goTo"}); // nothing to compare to
-
+    if (instructionOrder.length < 1) {
+        instructionOrder.push(packGoToQuestion(targetPlaceIndex)); // nothing to compare to
+        return;
+    }
     // try to make different target than previous instruction
     for (let i = 0; i < 1000; i++){
         if(targetPlaceIndex != instructionOrder[instructionOrder.length-1].targetPlaceIndex) { // different from last
@@ -680,12 +682,12 @@ getNewQuestionKind = () => {
     let moveToChance = 1.0 / moveToRate;
 
     // moveto requires previous question be a goTo for pickup
-    if(moveAroundMode && instructionOrder[instructionOrder.length-1].questionType == "goTo" && r < moveToRate && (instructionOrder.length < 1)){
+    if(moveAroundMode && instructionOrder[instructionOrder.length-1].questionType == "goTo" && r < moveToChance && (instructionOrder.length < 1)){
         moveToQuestion();
         return;
     }
 
-    if(r >= moveToRate && r < moveToRate + mathChance) {
+    if(r >= moveToChance && r < moveToChance + mathChance) {
         mathQuestion();
         return;
     }
@@ -1074,6 +1076,8 @@ initElement.onclick = () => {
     doCommands(wordListArray);
     wordDict = wordListArray;
 
+    if (noTyping) mathQuestions = false;
+
     if (noTyping == true) answerElement.style.display = "none";
     else answerElement.style.display = "";
     
@@ -1127,7 +1131,8 @@ goInside = (room, x, y) => {
 }
 
 document.body.addEventListener("keydown", (event)=>{
-    if(positionMatching()) return;
+    if(!sessionStarted) return;
+    if(positionMatching() && !noTyping) return;
     if(event.key == "Enter" && sessionStarted) {
         let room = currentPosition.room;
         let x = currentPosition.x;
