@@ -368,7 +368,7 @@ checkAnswer = (c = 0) => {
         if(isInsideCheckPlaces(answerElement.value,c) || noTyping == true){
             if(currentPosition.x == instructionOrder[c].moveToX 
             && currentPosition.y == instructionOrder[c].moveToY
-            && currentPosition.room == currentMoveToPlace.room){
+            && currentPosition.room == instructionOrder[c].room){
                 checkPlaces[instructionOrder[c].targetPlaceIndex].x = instructionOrder[c].moveToX;
                 checkPlaces[instructionOrder[c].targetPlaceIndex].y = instructionOrder[c].moveToY;
                 checkPlaces[instructionOrder[c].targetPlaceIndex].room = instructionOrder[c].moveToRoom;
