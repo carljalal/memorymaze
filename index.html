@@ -683,7 +683,7 @@ getNewQuestionKind = () => {
 
     // moveto requires previous question be a goTo for pickup
     if(instructionOrder.length > 0){
-        if(moveAroundMode && instructionOrder[instructionOrder.length-1].questionType == "goTo" && r < moveToChance && (instructionOrder.length < 1)){
+        if(moveAroundMode && instructionOrder[instructionOrder.length-1].questionType == "goTo" && r < moveToChance){
             moveToQuestion();
             return;
         }
