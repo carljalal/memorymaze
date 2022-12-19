@@ -354,9 +354,9 @@ checkAnswer = (c = 0) => {
     }
     if(instructionOrder[c].questionType == "goTo" && correct == false){
         if(isInsideCheckPlaces(answerElement.value,c) || noTyping == true){
-            if(currentPosition.x == checkPlaces[instructionOrder[c].targetPlaceIndex].x 
-            && currentPosition.y == checkPlaces[instructionOrder[c].targetPlaceIndex].y
-            && currentPosition.room == checkPlaces[instructionOrder[c].targetPlaceIndex].room){                
+            if(currentPosition.x == instructionOrder[c].x 
+            && currentPosition.y == instructionOrder[c].y
+            && currentPosition.room == instructionOrder[c].room){                
                 if(basicRandom(0,addRate)==0) addCheckPlace();
                 if(newRoomMode && basicRandom(0,newRoomRate)==0) addRoom();
                 newQuestion(true, c);
@@ -364,7 +364,7 @@ checkAnswer = (c = 0) => {
                     if(instructionOrder[c].questionType == "moveTo"){
                         let cpy = {...instructionOrder[c]};
                         instructionOrder.splice(c,1);
-                        instructionOrder.insert(0,cpy);
+                        instructionOrder.splice(0,0,cpy);
                     }
                 }
                 correct = true;
@@ -686,6 +686,7 @@ getNewQuestionKind = () => {
     // pick for chance of moveto question
     let r = Math.random();
     let mathChance = 1.0 / mathQuestionsRate;
+    if(!mathQuestions) mathChance = 0;
     let moveToChance = 1.0 / moveToRate;
 
     // moveto requires previous question be a goTo for pickup
@@ -695,7 +696,7 @@ getNewQuestionKind = () => {
             return;
         }
     }
-    if(r >= moveToChance && r < moveToChance + mathChance) {
+    if(r >= moveToChance && r < moveToChance + mathChance && mathQuestions) {
         mathQuestion();
         return;
     }
@@ -1084,9 +1085,11 @@ initElement.onclick = () => {
     doCommands(wordListArray);
     wordDict = wordListArray;
 
-    if (noTyping) mathQuestions = false;
 
-    if (noTyping == true) answerElement.style.display = "none";
+    if (noTyping == true) {
+        answerElement.style.display = "none";
+        mathQuestions = false;
+    }
     else answerElement.style.display = "";
     
     answerElement.value = "";
