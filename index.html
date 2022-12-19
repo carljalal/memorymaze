@@ -354,9 +354,9 @@ checkAnswer = (c = 0) => {
     }
     if(instructionOrder[c].questionType == "goTo" && correct == false){
         if(isInsideCheckPlaces(answerElement.value,c) || noTyping == true){
-            if(currentPosition.x == instructionOrder[c].x 
-            && currentPosition.y == instructionOrder[c].y
-            && currentPosition.room == instructionOrder[c].room){                
+            if(currentPosition.x == checkPlaces[instructionOrder[c].targetPlaceIndex].x 
+            && currentPosition.y == checkPlaces[instructionOrder[c].targetPlaceIndex].y 
+            && currentPosition.room == checkPlaces[instructionOrder[c].targetPlaceIndex].room ){                
                 if(basicRandom(0,addRate)==0) addCheckPlace();
                 if(newRoomMode && basicRandom(0,newRoomRate)==0) addRoom();
                 newQuestion(true, c);
