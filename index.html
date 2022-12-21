@@ -70,6 +70,8 @@ let answering = false;
 let mathQuestions = true;
 let mathQuestionsRate = 5;
 let mathQuestionsDepth = 4;
+let clickQuestions = true;
+let clickQuestionsRate = 5;
 
 let mapVar = []
 let displayMapVar = []
@@ -98,6 +100,10 @@ randomItemDifferent = (dict,unmatch) => {
 
 let randCharList = "`1234567890-=qwertyuiop[]\\asdfasdfghjkl;'zxcvbnm,./~!@#$%^&*()_+QWERTYUIOP{}|ASDFGHJKL:\"ZXCVBNM<>?";
 let randNumList = "0123456789";
+
+getRandChar = () => {
+    return randCharList[Math.floor(Math.random() * randCharList.length)];
+}
 
 addCheckPlace = () => {
     let randroom = basicRandom(0, numRooms-1);
@@ -629,6 +635,12 @@ questionRefresh = () => {
         if (instructionOrder[i].questionType == "math"){
             questionElement.innerHTML += "calc " + instructionOrder[i].question;
         }
+        if (instructionOrder[i].questionType == "math"){
+            questionElement.innerHTML += "calc " + instructionOrder[i].question;
+        }
+        if (instructionOrder[i].questionType == "click"){
+            questionElement.innerHTML += instructionOrder[i].question;
+        }
         if (i < instructionOrder.length -1) questionElement.innerHTML += "<br>";
     }
 }
@@ -664,6 +676,107 @@ mathQuestion = () => {
     instructionOrder.push(packMathQuestion());
 }
 
+refreshClickQuestion = (instruction) => {
+    elements.correct.style.left = 400 + basicRandom(600);
+    elements.correct.style.top = basicRandom(600);
+    elements.correct.style.border = "2px black";
+    elements.textContent = instruction.answer;
+    elements.correct.style.width = 80;
+    elements.correct.style.height = 20;
+
+    elements.incorrect.style.left = 400 + basicRandom(600);
+    elements.incorrect.style.top = basicRandom(600);
+    elements.incorrect.style.border = "2px black";
+
+    let correctAnswer = instruction.answer;
+    let incorrectCharIndex = basicRandom(0,incorrectAnswer.length-1);
+    let incorrectAnswer = correctAnswer.substring(0, incorrectCharIndex) + getRandChar()  + correctAnswer.substring(incorrectCharIndex + 1);
+    elements.textContent = incorrectAnswer;
+    elements.correct.style.width = 80;
+    elements.correct.style.height = 20;
+
+    elements.finished.style.left = 400 + basicRandom(600);
+    elements.finished.style.top = basicRandom(600);
+    elements.correct.style.width = 20;
+    elements.correct.style.height = 20;
+    elements.finished.style.backgroundColor = "green"
+}
+
+finishClickQuestion = (instruction) => {
+    instruction.elements.correct.remove();
+    instruction.elements.incorrect.remove();
+    instruction.elements.finished.remove();
+
+    newQuestion(true, orderIndex);
+
+    feedbackElement.textContent += "\nyou got it!"
+    numCorrect++;
+    currentTime = performance.now();
+    answerTime = currentTime - lastTime;
+    totalTime = currentTime - startTime;
+    averageTime = totalTime / numCorrect;
+    lastTime = currentTime;
+    refreshScore();
+}
+
+getInstructionByWord = (word) => {
+    for(let i = 0; i < instructionOrder.length; i++){
+        if(instructionOrder[i].questionType == "click" && instructionOrder[i].word == word){
+            instructionOrder[i].orderIndex = i;
+            return instructionOrder[i];
+        }
+    }
+    return null;
+}
+
+incorrectClick = (word) => {
+    instruction = getInstructionByWord(word);
+    instruction.reps = instruction.originalReps;
+}
+correctClick = (word) => {
+    instruction = getInstructionByWord(word);
+    instruction.reps--;
+    if(instruction.reps < 0) instruction.reps = instruction.originalReps;
+}
+finishedClick = (word) => {
+    instruction = getInstructionByWord(word);
+    if(instruction.reps == 0) finishClickQuestion(instruction);
+    else instruction.reps = instruction.originalReps;
+}
+
+
+packClickQuestionElements = (word) => {
+    let elements = {};
+    
+    elements.correct = document.createElement("div");
+    elements.incorrect = document.createElement("div");
+    elements.finished = document.createElement("div");
+
+    elements.correct.addEventListener(() => {correctClick(word)});
+    elements.incorrect.addEventListener(() => {incorrectClick(word)});
+    elements.finished.addEventListener(() => {finishedClick(word)});
+
+    document.body.append(elements.correct);
+    document.body.append(elements.incorrect);
+    document.body.append(elements.finished);
+
+    return elements;
+}
+
+packClickQuestion = () => {
+    let place = checkPlaces[basicRandom(0,checkPlaces.length-1)];
+    let reps = basicRandom(0,9);
+    let question = "click " + place.word + " " + reps + " times";
+    let elements = packClickQuestionElements(place.word);
+    return {questionType: "click", answer: place.word, question: question, elements: elements, reps: reps, originalReps: reps};
+}
+
+clickQuestion = () => {
+    let instruction = packClickQuestion();
+    refreshClickQuestion(instruction);
+    instructionOrder.push(packClickQuestion());
+}
+
 goToQuestion = () => {
     let targetPlaceIndex = basicRandom(0,checkPlaces.length-1);
     if (instructionOrder.length < 1) {
@@ -686,19 +799,35 @@ getNewQuestionKind = () => {
     // pick for chance of moveto question
     let r = Math.random();
     let mathChance = 1.0 / mathQuestionsRate;
-    if(!mathQuestions) mathChance = 0;
     let moveToChance = 1.0 / moveToRate;
+    let clickChance = 1.0 / clickQuestionsRate;
+    if(!mathQuestions) mathChance = 0;
+    if(!clickQuestions) clickChance = 0;
+    if(!moveAroundMode) mathToChance = 0;
 
     // moveto requires previous question be a goTo for pickup
-    if(instructionOrder.length > 0){
-        if(moveAroundMode && instructionOrder[instructionOrder.length-1].questionType == "goTo" && r < moveToChance){
-            moveToQuestion();
+    if(r < moveToChance){
+        if(moveAroundMode && instructionOrder.length > 0){
+            if(instructionOrder[instructionOrder.length-1].questionType == "goTo")
+            {
+                moveToQuestion();
+                return;
+            }
+        }
+    }
+
+    if(r >= moveToChance && r < moveToChance + mathChance) {
+        if(mathQuestions){
+            mathQuestion();
             return;
         }
     }
-    if(r >= moveToChance && r < moveToChance + mathChance && mathQuestions) {
-        mathQuestion();
-        return;
+
+    if(r >= moveToChance + mathChance && r < moveToChance + mathChance + clickChance) {
+        if(clickQuestions){
+            clickQuestion();
+            return;
+        }
     }
 
     goToQuestion();
@@ -1066,6 +1195,11 @@ doCommands = (wordListArray) => {
             wordListArray.splice(i,1);
             i--;
         }
+        else if(wordListArray[i].substr(0,6).toLowerCase() == "noclick"){
+            clickQuestions = false;
+            wordListArray.splice(i,1);
+            i--;
+        }
     }
 }
 
@@ -1162,7 +1296,12 @@ document.body.addEventListener("keydown", (event)=>{
 
 positionMatchingInstruction = (i) => {
     if(instructionOrder[i].questionType == "math") return true;
-    if((currentPosition.x == instructionOrder[i].x) && (currentPosition.y == instructionOrder[i].y) && (currentPosition.room == instructionOrder[i].room)) return true;
+    if(instructionOrder[i].questionType == "moveTo"){
+        if((currentPosition.x == instructionOrder[i].moveToX) && (currentPosition.y == instructionOrder[i].moveToY) && (currentPosition.room == instructionOrder[i].moveToRoom)) return true;
+    }
+    if(instructionOrder[i].questionType == "goTo"){
+        if((currentPosition.x == checkPlaces[instructionOrder[i].targetPlaceIndex].x) && (currentPosition.y == checkPlaces[instructionOrder[i].targetPlaceIndex].y) && (currentPosition.room == checkPlaces[instructionOrder[i].targetPlaceIndex].room)) return true;
+    }
     return false;
 }
 
