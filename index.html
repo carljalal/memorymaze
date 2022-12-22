@@ -82,15 +82,15 @@ let displayMapVar = [];
 
 
 let pauseElement = document.createElement("button");
-pauseElement.value = "pause";
+pauseElement.innerHTML = "pause";
 pauseElement.onclick = () => {
     if(paused) {
         paused = false;
-        pauseElement.value = "pause";
+        pauseElement.innerHTML = "pause";
     }
     else {
         paused = true;
-        pauseElement.value = "unpause";
+        pauseElement.innerHTML = "unpause";
     }
 }
 
