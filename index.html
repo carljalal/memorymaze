@@ -127,12 +127,13 @@ checkTimerQuestion = (element) => {
 }
 
 timerQuestion = () => {
-    let element = document.createElement("button");
+    let element = document.createElement("div");
     element.timeReady = basicRandom(3,30);
     element.timeLeft = basicRandom(element.timeReady,100);
     element.originalTimeReady = element.timeReady;
     element.originalTimeLeft = element.timeLeft;
     element.addEventListener("pointerdown", () => {checkTimerQuestion(element)});
+    document.body.append(element);
     refreshTimerQuestion(element);
 }
 
