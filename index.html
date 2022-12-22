@@ -72,12 +72,80 @@ let mathQuestionsRate = 5;
 let mathQuestionsDepth = 4;
 let clickQuestions = true;
 let clickQuestionsRate = 5;
+let timerQuestions = true;
+let timerQuestionsRate = 0.01;
+let paused = false;
 
 let mapVar = []
 let displayMapVar = []
 
 
 
+let pauseElement = document.createElement("button");
+pauseElement.value = "pause";
+pauseElement.onclick = () => {
+    if(paused) {
+        paused = false;
+        pauseElement.value = "pause";
+    }
+    else {
+        paused = true;
+        pauseElement.value = "unpause";
+    }
+}
+
+
+
+
+refreshTimerQuestion = (element) => {
+    if (!paused) element.timeLeft--;
+    element.style.left = basicRandom(400,1000);
+    element.style.top = basicRandom(50,800);
+    element.style.border = "2px solid black";
+    element.textContent = "timer " + timeLeft;
+    element.style.width = basicRandom(80,100);
+    element.style.height = basicRandom(20,50);
+    element.style.position = "absolute";
+    element.style.fontFamily = "Verdana";
+    if(element.timeLeft < 0) {
+        timerQuestion();
+        feedbackElement += "<br>timer question elapsed";
+        element.timeReady = element.originalTimeReady;
+        element.timeLeft = element.originalTimeLeft;
+    }
+    element.timer = setTimeout(() => {refreshTimerQuestion(element)}, 1000);
+}
+
+checkTimerQuestion = (element) => {
+    if(element.timeLeft < timeReady){
+        clearTimeout(element.timer);
+        element.remove();
+        scoreCorrect();
+        refreshScore();
+        feedbackElement += "<br>you got the timer question!";
+    }
+}
+
+timerQuestion = () => {
+    let element = document.createElement("button");
+    element.timeReady = basicRandom(3,30);
+    element.timeLeft = basicRandom(element.timeReady,100);
+    element.originalTimeReady = element.timeReady;
+    element.originalTimeLeft = element.timeLeft;
+    element.addEventListener("pointerdown", () => {checkTimerQuestion(element)});
+    refreshTimerQuestion(element);
+}
+
+
+let timerQuestionsTimer = () => {
+    if(!timerQuestions || paused || !sessionStarted) return;
+    let r = Math.random();
+    if (r < timerQuestionsRate){
+        timerQuestion();
+    }
+}
+
+setInterval(timerQuestionsTimer, 1000);
 
 basicRandom = (min,max) => {
     return Math.floor(Math.random() * (max-min+1)) + min;
@@ -262,6 +330,7 @@ document.body.append(document.createElement("br"));
 document.body.append(scoreElement)
 document.body.append(document.createElement("br"));
 document.body.append(document.createElement("br"));
+document.body.append(pauseElement);
 
 questionElement.style.padding = "5px";
 insideElement.style.padding = "5px";
@@ -301,6 +370,7 @@ hideShowNonInitButtons = (state) => {
     mapElement.style.display = state;
     insideElement.style.display = state;
     questionElement.style.display = state;
+    pauseElement.style.display = state;
     //pickupElement.style.display = state
     //putdownElement.style.display = state
 }
@@ -346,6 +416,14 @@ isInsideCheckPlaces = (word,c) => {
 }
 
 
+let scoreCorrect = () => {
+    numCorrect++;
+    currentTime = performance.now();
+    answerTime = currentTime - lastTime;
+    totalTime = currentTime - startTime;
+    averageTime = totalTime / numCorrect;
+    lastTime = currentTime;
+}
 
 
 checkAnswer = (c = 0) => {
@@ -398,12 +476,7 @@ checkAnswer = (c = 0) => {
     }
     else {
         feedbackElement.textContent += "\nyou got it!"
-        numCorrect++;
-        currentTime = performance.now();
-        answerTime = currentTime - lastTime;
-        totalTime = currentTime - startTime;
-        averageTime = totalTime / numCorrect;
-        lastTime = currentTime;
+        scoreCorrect();
         refreshScore();
     }
 }
@@ -441,6 +514,7 @@ scoreElement.style.display = "none";
 mapElement.style.display = "none";
 insideElement.style.display = "none";
 questionElement.style.display = "none";
+pauseElement.style.display = "none";
 
 feedbackElement.style.flexWrap = "wrap";
 scoreElement.style.flexWrap = "wrap";
@@ -675,7 +749,7 @@ mathQuestion = () => {
 
 refreshClickQuestion = (instruction) => {
     instruction.elements.correct.style.left = basicRandom(400,1000);
-    instruction.elements.correct.style.top = basicRandom(50,1000);
+    instruction.elements.correct.style.top = basicRandom(50,800);
     instruction.elements.correct.style.border = "2px solid black";
     instruction.elements.correct.textContent = instruction.answer;
     instruction.elements.correct.style.width = basicRandom(80,100);
@@ -685,7 +759,7 @@ refreshClickQuestion = (instruction) => {
 
 
     instruction.elements.incorrect.style.left = basicRandom(400,1000);
-    instruction.elements.incorrect.style.top = basicRandom(50,1000);
+    instruction.elements.incorrect.style.top = basicRandom(50,800);
     instruction.elements.incorrect.style.border = "2px solid black";
     let correctAnswer = instruction.answer;
     let incorrectCharIndex = basicRandom(0,correctAnswer.length-1);
@@ -697,7 +771,7 @@ refreshClickQuestion = (instruction) => {
     instruction.elements.incorrect.style.fontFamily = "Verdana";
 
     instruction.elements.finished.style.left = basicRandom(400,1000);
-    instruction.elements.finished.style.top = basicRandom(50,1000);
+    instruction.elements.finished.style.top = basicRandom(50,800);
     instruction.elements.finished.style.width = basicRandom(10,50);
     instruction.elements.finished.style.height = basicRandom(10,50);
     instruction.elements.finished.style.backgroundColor = "green"
@@ -1211,8 +1285,13 @@ doCommands = (wordListArray) => {
             wordListArray.splice(i,1);
             i--;
         }
-        else if(wordListArray[i].substr(0,6).toLowerCase() == "noclick"){
+        else if(wordListArray[i].substr(0,7).toLowerCase() == "noclick"){
             clickQuestions = false;
+            wordListArray.splice(i,1);
+            i--;
+        }
+        else if(wordListArray[i].substr(0,7).toLowerCase() == "notimer"){
+            timerQuestions = false;
             wordListArray.splice(i,1);
             i--;
         }
