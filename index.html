@@ -117,7 +117,7 @@ refreshTimerQuestion = (element) => {
 }
 
 checkTimerQuestion = (element) => {
-    if(element.timeLeft < timeReady){
+    if(element.timeLeft < element.timeReady){
         clearTimeout(element.timer);
         element.remove();
         scoreCorrect();
