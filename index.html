@@ -76,8 +76,8 @@ let timerQuestions = true;
 let timerQuestionsRate = 0.01;
 let paused = false;
 
-let mapVar = []
-let displayMapVar = []
+let mapVar = [];
+let displayMapVar = [];
 
 
 
@@ -102,7 +102,7 @@ refreshTimerQuestion = (element) => {
     element.style.left = basicRandom(400,1000);
     element.style.top = basicRandom(50,800);
     element.style.border = "2px solid black";
-    element.textContent = "timer " + timeLeft;
+    element.textContent = "timer " + element.timeLeft;
     element.style.width = basicRandom(80,100);
     element.style.height = basicRandom(20,50);
     element.style.position = "absolute";
