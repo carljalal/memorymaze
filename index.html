@@ -98,15 +98,17 @@ pauseElement.onclick = () => {
 
 
 refreshTimerQuestion = (element) => {
-    if (!paused) element.timeLeft--;
-    element.style.left = basicRandom(400,1000);
-    element.style.top = basicRandom(50,800);
-    element.style.border = "2px solid black";
-    element.textContent = "timer " + element.timeLeft + " > " + element.timeReady;
-    element.style.width = basicRandom(80,100);
-    element.style.height = basicRandom(20,50);
-    element.style.position = "absolute";
-    element.style.fontFamily = "Verdana";
+    if (!paused) {
+        element.timeLeft--;
+        element.style.left = basicRandom(400,1000);
+        element.style.top = basicRandom(50,800);
+        element.style.border = "2px solid black";
+        element.textContent = "timer " + element.timeLeft + " > " + element.timeReady;
+        element.style.width = basicRandom(80,100);
+        element.style.height = basicRandom(20,50);
+        element.style.position = "absolute";
+        element.style.fontFamily = "Verdana";
+    }
     if(element.timeLeft < 0) {
         timerQuestion();
         feedbackElement += "<br>timer question elapsed";
