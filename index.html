@@ -635,9 +635,6 @@ questionRefresh = () => {
         if (instructionOrder[i].questionType == "math"){
             questionElement.innerHTML += "calc " + instructionOrder[i].question;
         }
-        if (instructionOrder[i].questionType == "math"){
-            questionElement.innerHTML += "calc " + instructionOrder[i].question;
-        }
         if (instructionOrder[i].questionType == "click"){
             questionElement.innerHTML += instructionOrder[i].question;
         }
@@ -677,29 +674,36 @@ mathQuestion = () => {
 }
 
 refreshClickQuestion = (instruction) => {
-    elements.correct.style.left = 400 + basicRandom(600);
-    elements.correct.style.top = basicRandom(600);
-    elements.correct.style.border = "2px black";
-    elements.textContent = instruction.answer;
-    elements.correct.style.width = 80;
-    elements.correct.style.height = 20;
+    instruction.elements.correct.style.left = basicRandom(400,1000);
+    instruction.elements.correct.style.top = basicRandom(50,1000);
+    instruction.elements.correct.style.border = "2px solid black";
+    instruction.elements.correct.textContent = instruction.answer;
+    instruction.elements.correct.style.width = basicRandom(80,100);
+    instruction.elements.correct.style.height = basicRandom(20,50);
+    instruction.elements.correct.style.position = "absolute";
+    instruction.elements.correct.style.fontFamily = "Verdana";
 
-    elements.incorrect.style.left = 400 + basicRandom(600);
-    elements.incorrect.style.top = basicRandom(600);
-    elements.incorrect.style.border = "2px black";
 
+    instruction.elements.incorrect.style.left = basicRandom(400,1000);
+    instruction.elements.incorrect.style.top = basicRandom(50,1000);
+    instruction.elements.incorrect.style.border = "2px solid black";
     let correctAnswer = instruction.answer;
-    let incorrectCharIndex = basicRandom(0,incorrectAnswer.length-1);
+    let incorrectCharIndex = basicRandom(0,correctAnswer.length-1);
     let incorrectAnswer = correctAnswer.substring(0, incorrectCharIndex) + getRandChar()  + correctAnswer.substring(incorrectCharIndex + 1);
-    elements.textContent = incorrectAnswer;
-    elements.correct.style.width = 80;
-    elements.correct.style.height = 20;
+    instruction.elements.incorrect.textContent = incorrectAnswer;
+    instruction.elements.incorrect.style.width = basicRandom(80,100);
+    instruction.elements.incorrect.style.height = basicRandom(20,50);
+    instruction.elements.incorrect.style.position = "absolute";
+    instruction.elements.incorrect.style.fontFamily = "Verdana";
 
-    elements.finished.style.left = 400 + basicRandom(600);
-    elements.finished.style.top = basicRandom(600);
-    elements.correct.style.width = 20;
-    elements.correct.style.height = 20;
-    elements.finished.style.backgroundColor = "green"
+    instruction.elements.finished.style.left = basicRandom(400,1000);
+    instruction.elements.finished.style.top = basicRandom(50,1000);
+    instruction.elements.finished.style.width = basicRandom(10,50);
+    instruction.elements.finished.style.height = basicRandom(10,50);
+    instruction.elements.finished.style.backgroundColor = "green"
+    instruction.elements.finished.style.position = "absolute";
+    instruction.elements.finished.textContent = instruction.answer;
+    instruction.elements.finished.style.fontFamily = "Verdana";
 }
 
 finishClickQuestion = (instruction) => {
@@ -707,7 +711,7 @@ finishClickQuestion = (instruction) => {
     instruction.elements.incorrect.remove();
     instruction.elements.finished.remove();
 
-    newQuestion(true, orderIndex);
+    newQuestion(true, instruction.orderIndex);
 
     feedbackElement.textContent += "\nyou got it!"
     numCorrect++;
@@ -721,7 +725,7 @@ finishClickQuestion = (instruction) => {
 
 getInstructionByWord = (word) => {
     for(let i = 0; i < instructionOrder.length; i++){
-        if(instructionOrder[i].questionType == "click" && instructionOrder[i].word == word){
+        if(instructionOrder[i].questionType == "click" && instructionOrder[i].answer == word){
             instructionOrder[i].orderIndex = i;
             return instructionOrder[i];
         }
@@ -729,19 +733,31 @@ getInstructionByWord = (word) => {
     return null;
 }
 
+passesOrderSettings = (i) => {
+    if(i == 0 || answerOutOfOrder) return true;
+    feedbackElement.innerHTML += "<br>question attempt is out of order"
+    return false;
+}
+
 incorrectClick = (word) => {
     instruction = getInstructionByWord(word);
+    if(!passesOrderSettings(instruction.orderIndex)) return;
     instruction.reps = instruction.originalReps;
+    refreshClickQuestion(instruction);
 }
 correctClick = (word) => {
     instruction = getInstructionByWord(word);
+    if(!passesOrderSettings(instruction.orderIndex)) return;
     instruction.reps--;
     if(instruction.reps < 0) instruction.reps = instruction.originalReps;
+    refreshClickQuestion(instruction);
 }
 finishedClick = (word) => {
     instruction = getInstructionByWord(word);
+    if(!passesOrderSettings(instruction.orderIndex)) return;
     if(instruction.reps == 0) finishClickQuestion(instruction);
     else instruction.reps = instruction.originalReps;
+    refreshClickQuestion(instruction);
 }
 
 
@@ -752,9 +768,9 @@ packClickQuestionElements = (word) => {
     elements.incorrect = document.createElement("div");
     elements.finished = document.createElement("div");
 
-    elements.correct.addEventListener(() => {correctClick(word)});
-    elements.incorrect.addEventListener(() => {incorrectClick(word)});
-    elements.finished.addEventListener(() => {finishedClick(word)});
+    elements.correct.addEventListener("pointerdown", () => {correctClick(word)});
+    elements.incorrect.addEventListener("pointerdown", () => {incorrectClick(word)});
+    elements.finished.addEventListener("pointerdown", () => {finishedClick(word)});
 
     document.body.append(elements.correct);
     document.body.append(elements.incorrect);
@@ -765,7 +781,7 @@ packClickQuestionElements = (word) => {
 
 packClickQuestion = () => {
     let place = checkPlaces[basicRandom(0,checkPlaces.length-1)];
-    let reps = basicRandom(0,9);
+    let reps = basicRandom(1,9);
     let question = "click " + place.word + " " + reps + " times";
     let elements = packClickQuestionElements(place.word);
     return {questionType: "click", answer: place.word, question: question, elements: elements, reps: reps, originalReps: reps};
@@ -774,7 +790,7 @@ packClickQuestion = () => {
 clickQuestion = () => {
     let instruction = packClickQuestion();
     refreshClickQuestion(instruction);
-    instructionOrder.push(packClickQuestion());
+    instructionOrder.push(instruction);
 }
 
 goToQuestion = () => {
