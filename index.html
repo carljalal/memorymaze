@@ -75,6 +75,9 @@ let clickQuestionsRate = 5;
 let timerQuestions = true;
 let timerQuestionsRate = 0.03;
 let paused = false;
+let SVGQuestions = false;
+let SVGQuestionsRate = 5;
+
 
 let mapVar = [];
 let displayMapVar = [];
@@ -84,7 +87,9 @@ let displayMapVar = [];
 
 
 
-
+let dCopy = (o) => {
+    return JSON.parse(JSON.stringify(o));
+}
 
 
 
@@ -278,12 +283,27 @@ addCheckPlace = () => {
     // make sure it's unique
     let found = false;
     for(let i = 0; i <= 1000; i++){
-        if(randchars){
+        let randcharsRate = 0;
+        if(randchars) randcharsRate = 1;
+        if(!SVGQuestions) SVGQuestionsRate = 0;
+
+        let totalChance = randcharsRate + SVGQuestionsRate;
+        let chance = basicRandom(1,totalChance);
+        let wordType = "default";
+        let thisSvgConfig = null;
+
+        if(SVGQuestions && wordDict.length == checkPlaces.length && chance > randcharsRate){
+            let wordType = "svg";
+            let thisSvgConfig = svgConfig();
+            let randWord = SVGHTMLGroup();
+        }
+        if(randchars && wordDict.length == checkPlaces.length && chance <= randCharsRate){
+            let wordType = "randchar";
             for(let i = 0; i < numRandChars; i++){
                 randWord += randCharList[Math.floor(Math.random() * randCharList.length)];
             }
         }
-        else randWord = randomItem(wordDict);
+        if(wordType == "default") randWord = randomItem(wordDict);
         let found = false;
         for(let j = 0; j < checkPlaces.length; j++){
             if(checkPlaces[j].word == randWord) {
@@ -293,7 +313,7 @@ addCheckPlace = () => {
         }
         if (found == false) {
             // unique
-            lastCheckPlace = {x:randx,y:randy,room: randroom,word:randWord};
+            lastCheckPlace = {x:randx,y:randy,room: randroom,word:randWord,wordType:wordType,svgConfig:thisSvgConfig};
             checkPlaces.push(lastCheckPlace);
             mapVar[randroom].places.push(lastCheckPlace);
             if(allowHints){
@@ -618,8 +638,8 @@ refreshScore = () => {
     text += "<br>time for last question: " + (answerTime/1000.0).toPrecision(4) + "s";
     text += "<br>average time per question: " + (averageTime/1000.0).toPrecision(4) + "s";
     text += "<br>words in use: " + checkPlaces.length;
-    if (randchars) text += "<br>total words: " + checkPlaces.length;
-    else text += "<br>total words: " + wordDict.length;
+    if (checkPlaces.length < wordDict.length) text += "<br>total words: " + wordDict.length;
+    else text += "<br>total words: " + checkPlaces.length;
     //if (lastQuestionType == "moveTo") 
     text += "<br>currentposition: " + JSON.stringify(currentPosition);
     scoreElement.innerHTML = text;
@@ -848,9 +868,31 @@ refreshClickQuestion = (instruction) => {
     instruction.elements.incorrect.style.top = basicRandom(50,800);
     instruction.elements.incorrect.style.border = "2px solid black";
     let correctAnswer = instruction.answer;
-    let incorrectCharIndex = basicRandom(0,correctAnswer.length-1);
-    let incorrectAnswer = correctAnswer.substring(0, incorrectCharIndex) + getRandChar()  + correctAnswer.substring(incorrectCharIndex + 1);
-    instruction.elements.incorrect.textContent = incorrectAnswer;
+    let incorrectAnswer = "";
+    
+    // decoy for SVG type
+    if(instruction.place.wordType == "svg") {
+        let alterSvgConfig = dCopy(instruction.place.thisSvgConfig);
+
+        while(alterSvgConfig == instruction.place.thisSvgConfig){
+            let r = basicRandom(1,6);
+            if(r == 1) alterSvgConfig.circle1.fillColorObject = randColorObject();
+            if(r == 2) alterSvgConfig.circle1.fillColorObject = randColorObject();
+            if(r == 3) alterSvgConfig.circle2.fillColorObject = randColorObject();
+            if(r == 4) alterSvgConfig.circle2.fillColorObject = randColorObject();
+            if(r == 5) alterSvgConfig.square.fillColorObject = randColorObject();
+            if(r == 6) alterSvgConfig.square.fillColorObject = randColorObject();
+        }
+        incorrectAnswer = SVGHTMLGroup(alterSvgConfig);
+    }
+    // decoy for text type
+    else {
+        let incorrectCharIndex = "";
+        basicRandom(0,correctAnswer.length-1);
+        incorrectAnswer = correctAnswer.substring(0, incorrectCharIndex) + getRandChar()  + correctAnswer.substring(incorrectCharIndex + 1);
+    }
+    
+    instruction.elements.incorrect.innerHTML = incorrectAnswer;
     instruction.elements.incorrect.style.width = basicRandom(80,100);
     instruction.elements.incorrect.style.height = basicRandom(20,50);
     instruction.elements.incorrect.style.position = "absolute";
@@ -862,7 +904,7 @@ refreshClickQuestion = (instruction) => {
     instruction.elements.finished.style.height = basicRandom(10,50);
     instruction.elements.finished.style.backgroundColor = "green"
     instruction.elements.finished.style.position = "absolute";
-    instruction.elements.finished.textContent = instruction.answer;
+    instruction.elements.finished.innerHTML = instruction.answer;
     instruction.elements.finished.style.fontFamily = "Verdana";
 }
 
@@ -944,7 +986,7 @@ packClickQuestion = () => {
     let reps = basicRandom(1,9);
     let question = "click " + place.word + " " + reps + " times";
     let elements = packClickQuestionElements(place.word);
-    return {questionType: "click", answer: place.word, question: question, elements: elements, reps: reps, originalReps: reps};
+    return {questionType: "click", answer: place.word, question: question, elements: elements, reps: reps, originalReps: reps, place:place};
 }
 
 clickQuestion = () => {
@@ -1378,6 +1420,16 @@ doCommands = (wordListArray) => {
         }
         else if(wordListArray[i].substr(0,7).toLowerCase() == "notimer"){
             timerQuestions = false;
+            wordListArray.splice(i,1);
+            i--;
+        }
+        else if(wordListArray[i].substr(0,3).toLowerCase() == "svg"){
+            SVGQuestions = true;
+            wordListArray.splice(i,1);
+            i--;
+        }
+        else if(wordListArray[i].substr(0,7).toLowerCase() == "svgrate"){
+            SVGQuestionsRate = numIncomingInstructions = parseInt(wordListArray[i].substring(7));;
             wordListArray.splice(i,1);
             i--;
         }
