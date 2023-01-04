@@ -283,22 +283,22 @@ addCheckPlace = () => {
     // make sure it's unique
     let found = false;
     for(let i = 0; i <= 1000; i++){
-        let randcharsRate = 0;
+        let randCharsRate = 0;
         if(randchars) randcharsRate = 1;
         if(!SVGQuestions) SVGQuestionsRate = 0;
 
-        let totalChance = randcharsRate + SVGQuestionsRate;
+        let totalChance = randCharsRate + SVGQuestionsRate;
         let chance = basicRandom(1,totalChance);
         let wordType = "default";
         let thisSvgConfig = null;
 
-        if(SVGQuestions && wordDict.length == checkPlaces.length && chance > randcharsRate){
-            let wordType = "svg";
-            let thisSvgConfig = svgConfig();
-            let randWord = SVGHTMLGroup();
+        if(SVGQuestions && wordDict.length <= checkPlaces.length && chance > randCharsRate){
+            wordType = "svg";
+            thisSvgConfig = randSVGConfig();
+            randWord = SVGHTMLGroup(thisSvgConfig);
         }
-        if(randchars && wordDict.length == checkPlaces.length && chance <= randCharsRate){
-            let wordType = "randchar";
+        if(randchars && wordDict.length <= checkPlaces.length && chance <= randCharsRate){
+            wordType = "randchar";
             for(let i = 0; i < numRandChars; i++){
                 randWord += randCharList[Math.floor(Math.random() * randCharList.length)];
             }
@@ -857,7 +857,7 @@ refreshClickQuestion = (instruction) => {
     instruction.elements.correct.style.left = basicRandom(400,1000);
     instruction.elements.correct.style.top = basicRandom(50,800);
     instruction.elements.correct.style.border = "2px solid black";
-    instruction.elements.correct.textContent = instruction.answer;
+    instruction.elements.correct.innerHTML = instruction.answer;
     instruction.elements.correct.style.width = basicRandom(80,100);
     instruction.elements.correct.style.height = basicRandom(20,50);
     instruction.elements.correct.style.position = "absolute";
@@ -872,9 +872,9 @@ refreshClickQuestion = (instruction) => {
     
     // decoy for SVG type
     if(instruction.place.wordType == "svg") {
-        let alterSvgConfig = dCopy(instruction.place.thisSvgConfig);
+        let alterSvgConfig = dCopy(instruction.place.svgConfig);
 
-        while(alterSvgConfig == instruction.place.thisSvgConfig){
+        while(SVGHTMLGroup(alterSvgConfig) == SVGHTMLGroup(instruction.place.svgConfig)){
             let r = basicRandom(1,6);
             if(r == 1) alterSvgConfig.circle1.fillColorObject = randColorObject();
             if(r == 2) alterSvgConfig.circle1.fillColorObject = randColorObject();
