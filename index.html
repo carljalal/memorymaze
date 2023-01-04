@@ -877,11 +877,11 @@ refreshClickQuestion = (instruction) => {
         while(SVGHTMLGroup(alterSvgConfig) == SVGHTMLGroup(instruction.place.svgConfig)){
             let r = basicRandom(1,6);
             if(r == 1) alterSvgConfig.circle1.fillColorObject = randColorObject();
-            if(r == 2) alterSvgConfig.circle1.fillColorObject = randColorObject();
+            if(r == 2) alterSvgConfig.circle1.strokeColorObject = randColorObject();
             if(r == 3) alterSvgConfig.circle2.fillColorObject = randColorObject();
-            if(r == 4) alterSvgConfig.circle2.fillColorObject = randColorObject();
+            if(r == 4) alterSvgConfig.circle2.strokeColorObject = randColorObject();
             if(r == 5) alterSvgConfig.square.fillColorObject = randColorObject();
-            if(r == 6) alterSvgConfig.square.fillColorObject = randColorObject();
+            if(r == 6) alterSvgConfig.square.strokeColorObject = randColorObject();
         }
         incorrectAnswer = SVGHTMLGroup(alterSvgConfig);
     }
