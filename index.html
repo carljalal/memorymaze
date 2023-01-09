@@ -989,7 +989,7 @@ packClickQuestionElements = (word) => {
 
 packClickQuestion = () => {
     let place = checkPlaces[basicRandom(0,checkPlaces.length-1)];
-    let reps = basicRandom(1,9);
+    let reps = basicRandom(1,5);
     let question = "click " + place.word + " " + reps + " times";
     let elements = packClickQuestionElements(place.word);
     return {questionType: "click", answer: place.word, question: question, elements: elements, reps: reps, originalReps: reps, place:place};
