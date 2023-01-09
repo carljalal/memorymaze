@@ -531,6 +531,10 @@ let scoreCorrect = () => {
     lastTime = currentTime;
 }
 
+let isInstructionSVG = (c) => {
+    return checkPlaces[instructionOrder[c].placeIndex].wordType == "svg";
+}
+
 
 checkAnswer = (c = 0) => {
     correct = false;
@@ -543,7 +547,7 @@ checkAnswer = (c = 0) => {
         }
     }
     if(instructionOrder[c].questionType == "goTo" && correct == false){
-        if(isInsideCheckPlaces(answerElement.value,c) || noTyping == true){
+        if(isInsideCheckPlaces(answerElement.value,c) || noTyping == true || isInstructionSVG(c)){
             if(currentPosition.x == checkPlaces[instructionOrder[c].targetPlaceIndex].x 
             && currentPosition.y == checkPlaces[instructionOrder[c].targetPlaceIndex].y 
             && currentPosition.room == checkPlaces[instructionOrder[c].targetPlaceIndex].room ){                
@@ -562,7 +566,7 @@ checkAnswer = (c = 0) => {
         }
     }
     if(instructionOrder[c].questionType == "moveTo" && c == 0 && correct == false){
-        if(isInsideCheckPlaces(answerElement.value,c) || noTyping == true){
+        if(isInsideCheckPlaces(answerElement.value,c) || noTyping == true || isInstructionSVG(c)){
             if(currentPosition.x == instructionOrder[c].moveToX 
             && currentPosition.y == instructionOrder[c].moveToY
             && currentPosition.room == instructionOrder[c].room){
@@ -829,7 +833,7 @@ moveToQuestion = () => {
 }
 
 packGoToQuestion = (placeIndex) => {
-    return {targetPlaceIndex: placeIndex, x: checkPlaces[placeIndex].x, y: checkPlaces[placeIndex].y, room: checkPlaces[placeIndex].room, questionType:"goTo"};
+    return {targetPlaceIndex: placeIndex, x: checkPlaces[placeIndex].x, y: checkPlaces[placeIndex].y, room: checkPlaces[placeIndex].room, questionType:"goTo",place:checkPlaces[placeIndex]};
 }
 
 packMathQuestion = () => {
@@ -837,11 +841,11 @@ packMathQuestion = () => {
     let question = "";
     for(let i = 0; i < mathQuestionsDepth; i++){
         if (i == 0) {
-            answer = basicRandom(0,9);
+            answer = basicRandom(-9,9);
             question += answer.toString();
         }
         else {
-            let num = basicRandom(0,9);
+            let num = basicRandom(-9,9);
             answer += num;
             question += " + " + num.toString();
         }
