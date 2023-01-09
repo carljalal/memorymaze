@@ -1514,9 +1514,19 @@ goInside = (room, x, y) => {
     return wentInside;
 }
 
+let moveKeys = (event) => {
+    if((event.key == "ArrowUp" || event.key =="w") && sessionStarted) moveUp(); 
+    if((event.key == "ArrowDown" || event.key =="s") && sessionStarted) moveDown(); 
+    if((event.key == "ArrowLeft" || event.key =="a") && sessionStarted) moveLeft(); 
+    if((event.key == "ArrowRight" || event.key =="d") && sessionStarted) moveRight(); 
+    if (noTyping == false) answerElement.value = "";
+}
+
 document.body.addEventListener("keydown", (event)=>{
     if(!sessionStarted) return;
-    if(positionMatching() && !noTyping) return;
+    if(document.activeElement == answerElement){
+        if((positionMatching() && !noTyping)) return;
+    }
     if(event.key == "Enter" && sessionStarted) {
         let room = currentPosition.room;
         let x = currentPosition.x;
@@ -1526,11 +1536,7 @@ document.body.addEventListener("keydown", (event)=>{
         }
         else checkAnswers(); 
     }
-    if((event.key == "ArrowUp" || event.key =="w") && sessionStarted) moveUp(); 
-    if((event.key == "ArrowDown" || event.key =="s") && sessionStarted) moveDown(); 
-    if((event.key == "ArrowLeft" || event.key =="a") && sessionStarted) moveLeft(); 
-    if((event.key == "ArrowRight" || event.key =="d") && sessionStarted) moveRight(); 
-    if (noTyping == false) answerElement.value = "";
+    moveKeys(event);
 });
 
 positionMatchingInstruction = (i) => {
