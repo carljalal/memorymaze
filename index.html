@@ -534,7 +534,7 @@ let scoreCorrect = () => {
 let isInstructionSVG = (c) => {
     if(instructionOrder[c].questionType == "math") return false;
     if(instructionOrder[c].questionType == "click") return false;
-    return checkPlaces[instructionOrder[c].placeIndex].wordType == "svg";
+    return checkPlaces[instructionOrder[c].targetPlaceIndex].wordType == "svg";
 }
 
 
