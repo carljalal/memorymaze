@@ -1560,9 +1560,15 @@ answerElement.addEventListener("keydown", (event)=>{
     if(!sessionStarted) return;
     if((event.key == "Enter") && sessionStarted && positionMatching() ) {
         checkAnswers();
+        event.preventDefault();
+        answerElement.value = "";
     }
-    event.preventDefault();
-    answerElement.value = "";
+    else {
+        if(positionMatching() == false) {
+            event.preventDefault();
+            answerElement.value = "";
+        }
+    }
 });
 
 
