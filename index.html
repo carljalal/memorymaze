@@ -76,7 +76,8 @@ let timerQuestions = true;
 let timerQuestionsRate = 0.03;
 let paused = false;
 let SVGQuestions = false;
-let SVGQuestionsRate = 5;
+let SVGQuestionsRate = 1;
+let maxClickReps = 5;
 
 
 let mapVar = [];
@@ -989,7 +990,7 @@ packClickQuestionElements = (word) => {
 
 packClickQuestion = () => {
     let place = checkPlaces[basicRandom(0,checkPlaces.length-1)];
-    let reps = basicRandom(1,5);
+    let reps = basicRandom(1,maxClickReps);
     let question = "click " + place.word + " " + reps + " times";
     let elements = packClickQuestionElements(place.word);
     return {questionType: "click", answer: place.word, question: question, elements: elements, reps: reps, originalReps: reps, place:place};
@@ -1435,7 +1436,12 @@ doCommands = (wordListArray) => {
             i--;
         }
         else if(wordListArray[i].substr(0,7).toLowerCase() == "svgrate"){
-            SVGQuestionsRate = numIncomingInstructions = parseInt(wordListArray[i].substring(7));;
+            SVGQuestionsRate = parseInt(wordListArray[i].substring(7));;
+            wordListArray.splice(i,1);
+            i--;
+        }
+        else if(wordListArray[i].substr(0,23).toLowerCase() == "maxclick"){
+            maxClickReps = parseInt(wordListArray[i].substring(8));
             wordListArray.splice(i,1);
             i--;
         }
