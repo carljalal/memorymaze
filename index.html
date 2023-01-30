@@ -894,8 +894,7 @@ refreshClickQuestion = (instruction) => {
     }
     // decoy for text type
     else {
-        let incorrectCharIndex = "";
-        basicRandom(0,correctAnswer.length-1);
+        let incorrectCharIndex = basicRandom(0,correctAnswer.length-1);
         incorrectAnswer = correctAnswer.substring(0, incorrectCharIndex) + getRandChar()  + correctAnswer.substring(incorrectCharIndex + 1);
     }
     
