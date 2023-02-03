@@ -15,6 +15,11 @@ document.body.addEventListener('dblclick', function(event) {
     event.preventDefault();
 }, { passive: false });
 
+document.ondblclick = function(e) {
+    e.preventDefault();
+}
+
+
 
 //wordDict = ["dictionary","for","foreach","if","currentPosition","randomItem",".push","[i]",".style."];
 let wordDict = [];
