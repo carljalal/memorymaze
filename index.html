@@ -38,6 +38,7 @@ let itemChar = "O";
 let wallChar = "Z";
 let oobChar = "8";
 let warpChar = "W";
+let returnChar = "R";
 let allowDiagonals = false;
 let sessionStarted = false;
 let startTime = 0.0;
@@ -83,7 +84,8 @@ let paused = false;
 let SVGQuestions = false;
 let SVGQuestionsRate = 1;
 let maxClickReps = 5;
-
+let moveToAnyXY = false;
+let placesAreRooms = false;
 
 let mapVar = [];
 let displayMapVar = [];
@@ -284,7 +286,10 @@ addCheckPlace = () => {
         randx = basicRandom(0,mapVar[randroom].mapBoundX-1);
         randy = basicRandom(0,mapVar[randroom].mapBoundY-1);
     }
+    let roomName = randroom;
     
+
+
     let randWord = "";
     // make sure it's unique
     let found = false;
@@ -319,7 +324,11 @@ addCheckPlace = () => {
         }
         if (found == false) {
             // unique
-            lastCheckPlace = {x:randx,y:randy,room: randroom,word:randWord,wordType:wordType,svgConfig:thisSvgConfig};
+            if (placesAreRooms) {
+                roomName = randWord;
+                addRoom(roomName, true);
+            }
+            lastCheckPlace = {x:randx,y:randy,room: randroom,roomName:roomName , hasRoom:placesAreRooms,word:randWord,wordType:wordType,svgConfig:thisSvgConfig};
             checkPlaces.push(lastCheckPlace);
             mapVar[randroom].places.push(lastCheckPlace);
             if(allowHints){
@@ -545,11 +554,12 @@ let isInstructionSVG = (c) => {
 
 
 checkAnswer = (c = 0) => {
-    correct = false;
+    let correct = false;
+    let preventFromGoingInside = false;
     if(instructionOrder[c].questionType == "math"){
         if(answerElement.value == instructionOrder[c].answer){
             if(basicRandom(0,addRate)==0) addCheckPlace();
-            if(newRoomMode && basicRandom(0,newRoomRate)==0) addRoom();
+            if(!placesAreRooms && newRoomMode && basicRandom(0,newRoomRate)==0) addRoom();
             newQuestion(true, c);
             correct = true;
         }
@@ -560,7 +570,7 @@ checkAnswer = (c = 0) => {
             && currentPosition.y == checkPlaces[instructionOrder[c].targetPlaceIndex].y 
             && currentPosition.room == checkPlaces[instructionOrder[c].targetPlaceIndex].room ){                
                 if(basicRandom(0,addRate)==0) addCheckPlace();
-                if(newRoomMode && basicRandom(0,newRoomRate)==0) addRoom();
+                if(!placesAreRooms && newRoomMode && basicRandom(0,newRoomRate)==0) addRoom();
                 newQuestion(true, c);
                 if (c < instructionOrder.length){
                     if(instructionOrder[c].questionType == "moveTo"){
@@ -575,20 +585,27 @@ checkAnswer = (c = 0) => {
     }
     if(instructionOrder[c].questionType == "moveTo" && c == 0 && correct == false){
         if(isInsideCheckPlaces(answerElement.value,c) || noTyping == true || isInstructionSVG(c)){
-            if(currentPosition.x == instructionOrder[c].moveToX 
-            && currentPosition.y == instructionOrder[c].moveToY
+            if(((currentPosition.x == instructionOrder[c].moveToX 
+            && currentPosition.y == instructionOrder[c].moveToY) || moveToAnyXY)
             && currentPosition.room == instructionOrder[c].room){
-                checkPlaces[instructionOrder[c].targetPlaceIndex].x = instructionOrder[c].moveToX;
-                checkPlaces[instructionOrder[c].targetPlaceIndex].y = instructionOrder[c].moveToY;
+                if(moveToAnyXY){
+                    checkPlaces[instructionOrder[c].targetPlaceIndex].x = currentPosition.x;
+                    checkPlaces[instructionOrder[c].targetPlaceIndex].y = currentPosition.y;
+                }
+                else{
+                    checkPlaces[instructionOrder[c].targetPlaceIndex].x = instructionOrder[c].moveToX; // should be the same as currentPosition.x anyway
+                    checkPlaces[instructionOrder[c].targetPlaceIndex].y = instructionOrder[c].moveToY;
+                }
                 checkPlaces[instructionOrder[c].targetPlaceIndex].room = instructionOrder[c].moveToRoom;
                 checkPlaces[instructionOrder[c].targetPlaceIndex].pickedUp = false;
                 refreshWordsInside();
                 newQuestion(true, c);
                 correct = true;
+                preventFromGoingInside = true;
             }
         }
     }
-    answerElement.value = ""
+    answerElement.value = "";
     if(correct==false) {
         feedbackElement.textContent += "\nerror"
     }
@@ -596,6 +613,9 @@ checkAnswer = (c = 0) => {
         feedbackElement.textContent += "\nyou got it!"
         scoreCorrect();
         refreshScore();
+    }
+    if(!preventFromGoingInside && placesAreRooms){
+        goInsidePlace();
     }
 }
 
@@ -721,6 +741,7 @@ displayMap = () => {
             if (c == "O" && !center) tempText += itemChar;
             if (c == "X" && !center) tempText += emptyChar;
             if (c == "W" && !center) tempText += warpChar;
+            if (c == "R" && !center) tempText += returnChar;
             if (center) tempText += centerChar;
             
             tempText += " ";
@@ -837,6 +858,10 @@ questionRefresh = () => {
 moveToQuestion = () => {
     let moveToPlace = findSuitableMovePlace();
     let targetPlaceIndex = instructionOrder[instructionOrder.length-1].targetPlaceIndex;
+    if(moveToAnyXY){
+        moveToPlace.x = null;
+        moveToPlace.y = null;
+    }
     instructionOrder.push({questionType: "moveTo",moveToX: moveToPlace.x,x:moveToPlace.x,y:moveToPlace.y,moveToY: moveToPlace.y,room:moveToPlace.room, moveToRoom: moveToPlace.room,targetPlaceIndex: targetPlaceIndex});
 }
 
@@ -1157,11 +1182,14 @@ goodWallPure = (room,x,y) => {
     return true;
 }
 
-addRoom = () => {
+addRoom = (roomName = null, fromPlace = null) => {
     let mapx = basicRandom(minMapX,maxMapX);
     let mapy = basicRandom(minMapY,maxMapY);
-    mapVar.push({xy:[],walls:[],places:[],warps:[],mapBoundX:mapx,mapBoundY:mapy});
-    let roomNum = mapVar.length-1;
+    
+    let roomNum = mapVar.length;
+    if (roomName == null) roomName = roomNum;
+
+    mapVar.push({xy:[],walls:[],places:[],warps:[],mapBoundX:mapx,mapBoundY:mapy,roomName:roomName});
     for(let x = 0; x < mapx; x++){
         mapVar[roomNum].xy.push([]);
         for(let y = 0; y < mapy; y++){
@@ -1169,18 +1197,24 @@ addRoom = () => {
         }
     }
     if(allowWalls) wallAlgorithm(mapVar[roomNum]);
-    let warpRoomNum = -1;
-    if(bidirectionalWarps){
-        warpRoomNum = basicRandom(0,roomNum-1);
-        addWarp(roomNum,warpRoomNum,true);
+   
+    if (placesAreRooms){
+        addReturn(roomNum);
     }
     else{
-        addWarp(roomNum,basicRandom(0,roomNum-1),false);
-        warpRoomNum = basicRandom(0,roomNum-1);
-        addWarp(warpRoomNum,roomNum,false);
+        let warpRoomNum = -1;
+        if(bidirectionalWarps){
+            warpRoomNum = basicRandom(0,roomNum-1);
+            addWarp(roomNum,warpRoomNum,true);
+        }
+        else{
+            addWarp(roomNum,basicRandom(0,roomNum-1),false);
+            warpRoomNum = basicRandom(0,roomNum-1);
+            addWarp(warpRoomNum,roomNum,false);
+        }
     }
     numRooms++;
-    if(allowHints){
+    if(allowHints && !placesAreRooms){
         feedbackElement.textContent += "new room added:\n";
         feedbackElement.textContent += "warp from room " + warpRoomNum;
     }
@@ -1225,6 +1259,22 @@ addWarp = (roomStart, roomEnd, twoway = true) => {
                         }
                     }
                 }
+            }
+        }
+    }
+    return false;
+}
+
+function addReturn(roomNum) {
+    for(let i = 0; i <= 1000; i++){
+        let randx = basicRandom(0,mapVar[roomNum].mapBoundX-1);
+        let randy = basicRandom(0,mapVar[roomNum].mapBoundY-1);
+        if(mapVar[roomNum].xy[randx][randy] != "Z" || !preventWallOverwrite) {
+            if(mapVar[roomNum].xy[randx][randy] != "W" && mapVar[roomNum].xy[randx][randy] != "O") {
+                mapVar[roomNum].xy[randx][randy] = "R";
+                mapVar[roomNum].returnX = randx;
+                mapVar[roomNum].returnY = randy;
+                return true;
             }
         }
     }
@@ -1444,8 +1494,18 @@ doCommands = (wordListArray) => {
             wordListArray.splice(i,1);
             i--;
         }
-        else if(wordListArray[i].substr(0,23).toLowerCase() == "maxclick"){
+        else if(wordListArray[i].substr(0,8).toLowerCase() == "maxclick"){
             maxClickReps = parseInt(wordListArray[i].substring(8));
+            wordListArray.splice(i,1);
+            i--;
+        }
+        else if(wordListArray[i].substr(0,11).toLowerCase() == "movetoanyxy"){
+            moveToAnyXY = true;
+            wordListArray.splice(i,1);
+            i--;
+        }
+        else if(wordListArray[i].substr(0,14).toLowerCase() == "placesarerooms"){
+            placesAreRooms = true;
             wordListArray.splice(i,1);
             i--;
         }
@@ -1476,26 +1536,26 @@ initElement.onclick = () => {
     else answerElement.style.display = "";
     
     answerElement.value = "";
-    answerElement.cols = 50
-    answerElement.rows = 1
+    answerElement.cols = 50;
+    answerElement.rows = 1;
 
-    mapElement.style.display = ""
+    mapElement.style.display = "";
 
     
     checkPlaces = [];
     lastCheckPlace = {};
 
-    mapVar = []
-    displayMapVar = []
+    mapVar = [];
+    displayMapVar = [];
 
-    initializeRooms(numRooms,minMapX,maxMapX,minMapY,maxMapY);
+    if(!placesAreRooms) initializeRooms(numRooms,minMapX,maxMapX,minMapY,maxMapY);
 
     
     if(allowWalls){
         mapVar.forEach(room => wallAlgorithm(room));
     }
 
-    initializeWarps();
+    if(!placesAreRooms) initializeWarps();
 
     for(let i = 0; i < viewDiameter; i++){
         displayMapVar.push([]);
@@ -1524,6 +1584,48 @@ goInside = (room, x, y) => {
     return wentInside;
 }
 
+function getCheckPlaceByCurrentPosition(){
+    return checkPlaces[checkPlaces.findIndex(p => (p.x == currentPosition.x && p.y == currentPosition.y && p.room == currentPosition.room))];
+}
+
+function goInsidePlace() {
+    if(getLetterOfCurrentPosition() == "O"){
+        let p = getCheckPlaceByCurrentPosition();
+        let roomNum = getRoomNumByRoomName(p.word);
+        currentPosition.room = roomNum;
+        currentPosition.x = mapVar[roomNum].returnX;
+        currentPosition.y = mapVar[roomNum].returnY;
+    }
+    displayMap();
+}
+
+function getLetterOfCurrentPosition(){
+    let room = currentPosition.room;
+    let x = currentPosition.x;
+    let y = currentPosition.y;
+    return mapVar[room].xy[x][y];
+}
+
+function getRoomNameOfCurrentPosition(){
+    return mapVar[currentPosition.room].roomName;
+}
+
+function getRoomNumByRoomName(name){
+    return mapVar.findIndex(m => m.roomName == name);
+}
+
+function getCheckPlaceByRoomName(roomName){
+    return checkPlaces[checkPlaces.findIndex(p => p.word == roomName)];
+}
+
+function goReturn(){
+    let p = getCheckPlaceByRoomNum(currentPosition.room);
+    currentPosition.room = p.room;
+    currentPosition.x = p.x;
+    currentPosition.y = p.y;
+    displayMap();
+}
+
 let moveKeys = (event) => {
     if((event.key == "ArrowUp" || event.key =="w") && sessionStarted) moveUp(); 
     if((event.key == "ArrowDown" || event.key =="s") && sessionStarted) moveDown(); 
@@ -1541,8 +1643,11 @@ document.body.addEventListener("keydown", (event)=>{
         let room = currentPosition.room;
         let x = currentPosition.x;
         let y = currentPosition.y;
-        if(mapVar[room].xy[x][y] == "W"){
+        if(getLetterOfCurrentPosition() == "W"){
             goInside(room, x, y);
+        }
+        else if(getLetterOfCurrentPosition() == "R"){
+            goReturn();
         }
         else checkAnswers(); 
     }
@@ -1552,7 +1657,7 @@ document.body.addEventListener("keydown", (event)=>{
 positionMatchingInstruction = (i) => {
     if(instructionOrder[i].questionType == "math") return true;
     if(instructionOrder[i].questionType == "moveTo"){
-        if((currentPosition.x == instructionOrder[i].moveToX) && (currentPosition.y == instructionOrder[i].moveToY) && (currentPosition.room == instructionOrder[i].moveToRoom)) return true;
+        if((((currentPosition.x == instructionOrder[i].moveToX) && (currentPosition.y == instructionOrder[i].moveToY))) && (currentPosition.room == instructionOrder[i].moveToRoom)) return true;
     }
     if(instructionOrder[i].questionType == "goTo"){
         if((currentPosition.x == checkPlaces[instructionOrder[i].targetPlaceIndex].x) && (currentPosition.y == checkPlaces[instructionOrder[i].targetPlaceIndex].y) && (currentPosition.room == checkPlaces[instructionOrder[i].targetPlaceIndex].room)) return true;
