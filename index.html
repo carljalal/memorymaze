@@ -68,6 +68,7 @@ let moveAroundMode = false;
 let showPosition = false;
 let allowStacking = true;
 let numTriesSuitable = 10000;
+let defaultIterationTimeout = 10000;
 let moveToRate = 10;
 let newRoomMode = false;
 let newRoomRate = 20;
@@ -356,25 +357,69 @@ function addCheckPlace() {
     }
 }
 
+function iterateUntilTrue(ftest, fgen){
+    let r = null;
+    for (let i = 0; i < defaultIterationTimeout; i++){
+        r = fgen();
+        if(ftest(r)) return r;
+    }
+    return r;
+}
 
-function findSuitableMovePlace() {
-    let randroom = basicRandom(0, numRooms-1);
-    let randx = basicRandom(0,mapVar[randroom].mapBoundX-1);
-    let randy = basicRandom(0,mapVar[randroom].mapBoundY-1);
-    for(let i = 0; i <= 10000; i++){
-        if(mapVar[randroom].xy[randx][randy] != "Z" || !preventWallOverwrite) {
-            if(mapVar[randroom].xy[randx][randy] != "W") {
-                if(mapVar[randroom].xy[randx][randy] != "O" || allowStacking) {
+function getListOfPlacesMatchingRoomNumAndNotMatchingCheckPlace(roomNum, checkPlace){
+    return checkPlaces.filter(p => (p != checkPlace && p == roomNum));
+}
+
+function getListOfWarpRoomNumsInRoom(roomNum){
+
+}
+
+function getConnectedRoomNumFromRoomNumAndAvoidCheckPlace(roomNum, checkPlace){
+    let list = getListOfCheckPlacesMatchingRoomNumAndNotMatchingCheckPlace(roomNum, checkPlace);
+    list = list.map(p => getRoomNumByRoomName(p.word));
+    let retRoom = getCheckPlaceByRoomName(getRoomNameByRoomNum(roomNum)).room;
+    list.push(retRoom);
+    // getListOfWarpRoomNumsInRoom(roomNum);
+    return randomItem(list);
+}
+
+function findSuitableRoomNum(checkPlace){
+    let r = checkPlace.room;
+    for(let i = 0; i < 100; i++){
+        r = getConnectedRoomNumFromRoomNumAndAvoidCheckPlace(r);
+    }
+    return r;
+}
+
+function getRoomNum(checkPlace){
+    let r = null;
+    if (placesAreRooms) r = findSuitableRoomNum(checkPlace)
+    else r = randRoomNum();
+    return r;
+}
+
+function randRoomNum(){
+    return basicRandom(0, numRooms-1);
+}
+
+function findSuitableMovePlace(checkPlace) {
+    let room = getRoomNum(checkPlace);
+    let x = basicRandom(0,mapVar[room].mapBoundX-1);
+    let y = basicRandom(0,mapVar[room].mapBoundY-1);
+    for(let i = 0; i <= defaultIterationTimeout; i++){
+        if(mapVar[room].xy[x][y] != "Z" || !preventWallOverwrite) {
+            if(mapVar[room].xy[x][y] != "W") {
+                if(mapVar[room].xy[x][y] != "O" || allowStacking) {
                     break;
                 }
             }
         }
-        randroom = basicRandom(0, numRooms-1);
-        randx = basicRandom(0,mapVar[randroom].mapBoundX-1);
-        randy = basicRandom(0,mapVar[randroom].mapBoundY-1);
+        room = basicRandom(0, numRooms-1);
+        x = basicRandom(0,mapVar[room].mapBoundX-1);
+        y = basicRandom(0,mapVar[room].mapBoundY-1);
     }
     
-    return {x:randx,y:randy,room: randroom};
+    return {x: x , y: y , room: room};
 }
 
 
@@ -832,7 +877,10 @@ downElement.onclick = () => {
 
 function getMoveToDisplayQuestion(instruction){
     let s = ``;
-    s += `move ${getWordOfTargetCheckPlaceOfInstruction()} to room: ${instruction.room}`;
+    s += `move ${getWordOfTargetCheckPlaceOfInstruction()}`
+    if(placesAreRooms) s += ` inside `;
+    else s += ` to room: `;
+    s += `${instruction.room}`;
     if (instruction.x != null) s += `, x: ${instruction.x}`;
     if (instruction.y != null) s += `, y: ${instruction.y}`;
     return s;
@@ -840,6 +888,15 @@ function getMoveToDisplayQuestion(instruction){
 
 function getWordOfTargetCheckPlaceOfInstruction(instruction){
     return checkPlaces[instruction.targetPlaceIndex].word;
+}
+
+function getGoToDisplayQuestion(instruction){
+    let s = "";
+    s += `go `;
+    if(placesAreRooms) s += `inside `;
+    else s += `to `;
+    s += getWordOfTargetCheckPlaceOfInstruction(instruction);
+    return s;
 }
 
 function questionRefresh () {
@@ -860,27 +917,33 @@ function questionRefresh () {
             //questionElement.innerHTML += " to room:" + instructionOrder[i].room + ", x:" + instructionOrder[i].x + ", y:" + instructionOrder[i].y;
             questionElement.innerHTML += getMoveToDisplayQuestion(instructionOrder[i]);
         }
-        if (instructionOrder[i].questionType == "goTo"){
-            questionElement.innerHTML += "go to " + checkPlaces[instructionOrder[i].targetPlaceIndex].word;
+        else if (instructionOrder[i].questionType == "goTo"){
+            //questionElement.innerHTML += "go to " + checkPlaces[instructionOrder[i].targetPlaceIndex].word;
+            questionElement.innerHTML += getGoToDisplayQuestion(instructionOrder[i]);
         }
-        if (instructionOrder[i].questionType == "math"){
+        else if (instructionOrder[i].questionType == "math"){
             questionElement.innerHTML += "calc " + instructionOrder[i].question;
         }
-        if (instructionOrder[i].questionType == "click"){
+        else if (instructionOrder[i].questionType == "click"){
             questionElement.innerHTML += instructionOrder[i].question;
         }
         if (i < instructionOrder.length -1) questionElement.innerHTML += "<br>";
     }
 }
 
+function getCheckPlaceByTargetPlaceIndex(targetPlaceIndex) {
+    return checkPlaces[targetPlaceIndex];
+}
+
 function moveToQuestion() {
-    let moveToPlace = findSuitableMovePlace();
     let targetPlaceIndex = instructionOrder[instructionOrder.length-1].targetPlaceIndex;
+    let checkPlace = getCheckPlaceByTargetPlaceIndex(targetPlaceIndex);
+    let moveToPlace = findSuitableMovePlace(checkPlace);
     if(moveToAnyXY){
         moveToPlace.x = null;
         moveToPlace.y = null;
     }
-    instructionOrder.push({questionType: "moveTo",moveToX: moveToPlace.x,x:moveToPlace.x,y:moveToPlace.y,moveToY: moveToPlace.y,room:moveToPlace.room, moveToRoom: moveToPlace.room,targetPlaceIndex: targetPlaceIndex});
+    instructionOrder.push({questionType: "moveTo", moveToX: moveToPlace.x, x: moveToPlace.x, y: moveToPlace.y, moveToY: moveToPlace.y, room: moveToPlace.room, moveToRoom: moveToPlace.room, targetPlaceIndex: targetPlaceIndex, holding: checkPlace});
 }
 
 function packGoToQuestion(placeIndex) {
@@ -1635,6 +1698,10 @@ function getRoomNumByRoomName(name){
 
 function getCheckPlaceByRoomName(roomName){
     return checkPlaces[checkPlaces.findIndex(p => p.word == roomName)];
+}
+
+function getRoomNameByRoomNum(roomNum){
+    return mapVar[roomNum].roomName;
 }
 
 function goReturn(){
