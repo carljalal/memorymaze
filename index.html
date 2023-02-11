@@ -96,22 +96,22 @@ let displayMapVar = [];
 
 
 
-let dCopy = (o) => {
+function dCopy(o) {
     return JSON.parse(JSON.stringify(o));
 }
 
 
 
-let RGBToString = (r,g,b) => {
+function RGBToString(r,g,b) {
     return `rgb(${r},${g},${b})`
 }
 
-let RGBObjectToString = (o) => {
+function RGBObjectToString(o) {
     return RGBToString(o.r,o.g,o.b);
 }
 
 
-let randColorObject = () => {
+function randColorObject() {
     let r = Math.floor(Math.random()*27);
     let g = Math.floor(Math.random()*27);
     let b = Math.floor(Math.random()*27);
@@ -124,18 +124,18 @@ let randColorObject = () => {
     return {r:r,g:g,b:b,string:RGBToString(r,g,b)};
 }
 
-let randColorString = () => {
+function randColorString() {
     o = randColorObject();
     return RGBObjectToString(o);
 }
 
 
-let randSize = (r) => {
+function randSize(r) {
     return 10+Math.floor(Math.random()*r/10)*10;
 }
 
 
-let stringSVGCircle = (o) => {
+function stringSVGCircle(o) {
     let svgString = `<circle cx="` + o.x;
     svgString += `" cy="` + o.y;
     svgString += `" r="` + o.size;
@@ -146,12 +146,12 @@ let stringSVGCircle = (o) => {
     return svgString;
 }
 
-let stringSVGRect = (o) => {
+function stringSVGRect(o) {
     return `<rect width="${o.xSVG}" height="${o.ySVG}" style="fill:${RGBObjectToString(o.fillColorObject)};stroke:${RGBObjectToString(o.strokeColorObject)};stroke-width:${20}"/>`;
 }
 
 
-let SVGHTMLGroup = (o) => {
+function SVGHTMLGroup(o) {
     let s = "";
     s += stringSVGRect(o.square);
     s += stringSVGCircle(o.circle1);
@@ -160,15 +160,15 @@ let SVGHTMLGroup = (o) => {
 }
 
 
-let wrapInSVG = (svgString,xSVG,ySVG) => {
+function wrapInSVG(svgString,xSVG,ySVG) {
     return `<svg width="${xSVG}" height="${ySVG}">` + svgString + `</svg>`;
 }
 
-let circleSVGConfig = (xSVG,ySVG,x,y)  => {
+function circleSVGConfig(xSVG,ySVG,x,y) {
     return {type:"circle",fillColorObject:randColorObject(), strokeColorObject:randColorObject(), size: randSize(ySVG/3),x:x,y:y,xSVG:xSVG,ySVG:ySVG};
 }
 
-let randSVGConfig = () => {
+function randSVGConfig() {
     let xSVG = 150;
     let ySVG = 80;
     let x = xSVG/3;
@@ -194,7 +194,7 @@ pauseElement.onclick = () => {
 
 
 
-refreshTimerQuestion = (element) => {
+function refreshTimerQuestion(element) {
     if (!paused) {
         element.timeLeft--;
         element.style.left = basicRandom(400,1000);
@@ -215,7 +215,7 @@ refreshTimerQuestion = (element) => {
     element.timer = setTimeout(() => {refreshTimerQuestion(element)}, 1000);
 }
 
-checkTimerQuestion = (element) => {
+function checkTimerQuestion(element) {
     if(element.timeLeft < element.timeReady){
         clearTimeout(element.timer);
         element.remove();
@@ -225,7 +225,7 @@ checkTimerQuestion = (element) => {
     }
 }
 
-timerQuestion = () => {
+function timerQuestion() {
     let element = document.createElement("div");
     element.timeReady = basicRandom(3,30);
     element.timeLeft = basicRandom(element.timeReady,100);
@@ -237,7 +237,7 @@ timerQuestion = () => {
 }
 
 
-let timerQuestionsTimer = () => {
+function timerQuestionsTimer() {
     if(!timerQuestions || paused || !sessionStarted) return;
     let r = Math.random();
     if (r < timerQuestionsRate){
@@ -247,15 +247,15 @@ let timerQuestionsTimer = () => {
 
 setInterval(timerQuestionsTimer, 1000);
 
-basicRandom = (min,max) => {
+function basicRandom(min,max) {
     return Math.floor(Math.random() * (max-min+1)) + min;
 }
 
-randomItem = (dict) => {
+function randomItem(dict) {
     return dict[basicRandom(0,dict.length - 1)];
 }
 
-randomItemDifferent = (dict,unmatch) => {
+function randomItemDifferent(dict, unmatch) {
     for(let i = 0; i < 1000; i++){
         let randomWord = dict[basicRandom(0,dict.length - 1)];
         if (randomWord != unmatch) return randomWord;
@@ -269,7 +269,7 @@ randomItemDifferent = (dict,unmatch) => {
 let randCharList = "`1234567890-=qwertyuiop[]\\asdfasdfghjkl;'zxcvbnm,./~!@#$%^&*()_+QWERTYUIOP{}|ASDFGHJKL:\"ZXCVBNM<>?";
 let randNumList = "0123456789";
 
-getRandChar = () => {
+function getRandChar() {
     return randCharList[Math.floor(Math.random() * randCharList.length)];
 }
 
@@ -291,7 +291,7 @@ function getXYRoom(){
     return {x:randx,y:randy,room:randroom};
 }
 
-addCheckPlace = () => {
+function addCheckPlace() {
     let randWord = "";
     let roomName = null;
     // make sure it's unique
@@ -357,7 +357,7 @@ addCheckPlace = () => {
 }
 
 
-findSuitableMovePlace = () => {
+function findSuitableMovePlace() {
     let randroom = basicRandom(0, numRooms-1);
     let randx = basicRandom(0,mapVar[randroom].mapBoundX-1);
     let randy = basicRandom(0,mapVar[randroom].mapBoundY-1);
@@ -485,7 +485,7 @@ let numSteps = 0;
 
 
 
-hideShowNonInitButtons = (state) => {
+function hideShowNonInitButtons(state) {
     checkElement.style.display = state
     upElement.style.display = state
     downElement.style.display = state
@@ -536,7 +536,7 @@ isInsideCheckPlaces = (word) => {
 }
 */
 
-isInsideCheckPlaces = (word,c) => {
+function isInsideCheckPlaces(word,c) {
     if(checkPlaces[instructionOrder[c].targetPlaceIndex].word == word) return true;
     return false;
 }
@@ -558,7 +558,7 @@ let isInstructionSVG = (c) => {
 }
 
 
-checkAnswer = (c = 0) => {
+function checkAnswer(c = 0) {
     let correct = false;
     let preventFromGoingInside = false;
     if(instructionOrder[c].questionType == "math"){
@@ -624,7 +624,7 @@ checkAnswer = (c = 0) => {
     }
 }
 
-checkAnswers = () => {
+function checkAnswers() {
     if(answerOutOfOrder){
         for(let i = 0; i < instructionOrder.length;i++) checkAnswer(i);
     }
@@ -641,7 +641,7 @@ checkElement.onclick = () => {
     else checkAnswers(); 
 }
 
-refreshMapStyle = () => {
+function refreshMapStyle() {
     mapElement.style.fontFamily = "Courier New";
     mapElement.style.fontSize = "50px"
     mapElement.style.border = "5px solid orange"
@@ -667,7 +667,7 @@ questionElement.style.flexWrap = "wrap";
 
 
 
-refreshScore = () => {
+function refreshScore() {
     let text = "";
     text += "Info:<br>num correct: " + numCorrect;
     text += "<br>num steps: " + numSteps;
@@ -684,7 +684,7 @@ refreshScore = () => {
     scoreElement.style.fontSize = "10px";
 }
 
-refreshCheckPlaces = (room) => {
+function refreshCheckPlaces(room) {
     // write the O for all positions which is a check place
     for(let i = 0; i < checkPlaces.length; i++){
         if(checkPlaces[i].pickedUp == true) continue;
@@ -695,7 +695,7 @@ refreshCheckPlaces = (room) => {
     }
 }
 
-refreshWordsInside = () => {
+function refreshWordsInside() {
     insideElement.innerHTML = "words inside:<br>";
     for(let checkPlaceIdx = 0; checkPlaceIdx < checkPlaces.length; checkPlaceIdx++){
         if(checkPlaces[checkPlaceIdx].pickedUp == true) continue;
@@ -708,7 +708,7 @@ refreshWordsInside = () => {
 }
 
 
-displayMap = () => {
+function displayMap() {
     let room = mapVar[currentPosition.room];
     feedbackElement.textContent = "Feedback: \n";
     
@@ -762,7 +762,7 @@ displayMap = () => {
 }
 
 
-isWalkable = (room,x,y) => {
+function isWalkable(room,x,y) {
     if(x < 0) return false;
     if(x >= mapVar[room].mapBoundX) return false;
     if(y < 0) return false;
@@ -774,7 +774,7 @@ isWalkable = (room,x,y) => {
 }
 
 
-moveLeft = () => {
+function moveLeft() {
     if(isWalkable(currentPosition.room,currentPosition.x-1,currentPosition.y)) {
         currentPosition.x--;
         numSteps++;
@@ -782,7 +782,7 @@ moveLeft = () => {
     }
 }
 
-moveRight = () => {
+function moveRight() {
     if(isWalkable(currentPosition.room,currentPosition.x+1,currentPosition.y)) {
         currentPosition.x++;
         numSteps++;
@@ -790,7 +790,7 @@ moveRight = () => {
     }
 }
 
-moveUp = () => {
+function moveUp() {
     if(isWalkable(currentPosition.room,currentPosition.x,currentPosition.y-1)) {
         currentPosition.y--;
         numSteps++;
@@ -798,7 +798,7 @@ moveUp = () => {
     }
 }
 
-moveDown = () => {
+function moveDown() {
     if(isWalkable(currentPosition.room,currentPosition.x,currentPosition.y+1)) {
         currentPosition.y++;
         numSteps++;
@@ -842,7 +842,7 @@ function getWordOfTargetCheckPlaceOfInstruction(instruction){
     return checkPlaces[instruction.targetPlaceIndex].word;
 }
 
-questionRefresh = () => {
+function questionRefresh () {
     if(instructionOrder[0].questionType == "moveTo"){
         checkPlaces[instructionOrder[0].targetPlaceIndex].pickedUp = true;
         let room = checkPlaces[instructionOrder[0].targetPlaceIndex].room;
@@ -873,7 +873,7 @@ questionRefresh = () => {
     }
 }
 
-moveToQuestion = () => {
+function moveToQuestion() {
     let moveToPlace = findSuitableMovePlace();
     let targetPlaceIndex = instructionOrder[instructionOrder.length-1].targetPlaceIndex;
     if(moveToAnyXY){
@@ -883,11 +883,11 @@ moveToQuestion = () => {
     instructionOrder.push({questionType: "moveTo",moveToX: moveToPlace.x,x:moveToPlace.x,y:moveToPlace.y,moveToY: moveToPlace.y,room:moveToPlace.room, moveToRoom: moveToPlace.room,targetPlaceIndex: targetPlaceIndex});
 }
 
-packGoToQuestion = (placeIndex) => {
+function packGoToQuestion(placeIndex) {
     return {targetPlaceIndex: placeIndex, x: checkPlaces[placeIndex].x, y: checkPlaces[placeIndex].y, room: checkPlaces[placeIndex].room, questionType:"goTo",place:checkPlaces[placeIndex]};
 }
 
-packMathQuestion = () => {
+function packMathQuestion() {
     let answer = 0;
     let question = "";
     for(let i = 0; i < mathQuestionsDepth; i++){
@@ -904,11 +904,11 @@ packMathQuestion = () => {
     return {answer: answer, question: question, questionType: "math"};
 }
 
-mathQuestion = () => {
+function mathQuestion() {
     instructionOrder.push(packMathQuestion());
 }
 
-refreshClickQuestion = (instruction) => {
+function refreshClickQuestion(instruction) {
     instruction.elements.correct.style.left = basicRandom(400,1000);
     instruction.elements.correct.style.top = basicRandom(50,800);
     instruction.elements.correct.style.border = "2px solid black";
@@ -962,7 +962,7 @@ refreshClickQuestion = (instruction) => {
     instruction.elements.finished.style.fontFamily = "Verdana";
 }
 
-finishClickQuestion = (instruction) => {
+function finishClickQuestion(instruction) {
     instruction.elements.correct.remove();
     instruction.elements.incorrect.remove();
     instruction.elements.finished.remove();
@@ -979,7 +979,7 @@ finishClickQuestion = (instruction) => {
     refreshScore();
 }
 
-getInstructionByWord = (word) => {
+function getInstructionByWord(word) {
     for(let i = 0; i < instructionOrder.length; i++){
         if(instructionOrder[i].questionType == "click" && instructionOrder[i].answer == word){
             instructionOrder[i].orderIndex = i;
@@ -989,26 +989,26 @@ getInstructionByWord = (word) => {
     return null;
 }
 
-passesOrderSettings = (i) => {
+function passesOrderSettings(i) {
     if(i == 0 || answerOutOfOrder) return true;
     feedbackElement.innerHTML += "<br>question attempt is out of order"
     return false;
 }
 
-incorrectClick = (word) => {
+function incorrectClick(word) {
     instruction = getInstructionByWord(word);
     if(!passesOrderSettings(instruction.orderIndex)) return;
     instruction.reps = instruction.originalReps;
     refreshClickQuestion(instruction);
 }
-correctClick = (word) => {
+function correctClick(word) {
     instruction = getInstructionByWord(word);
     if(!passesOrderSettings(instruction.orderIndex)) return;
     instruction.reps--;
     if(instruction.reps < 0) instruction.reps = instruction.originalReps;
     refreshClickQuestion(instruction);
 }
-finishedClick = (word) => {
+function finishedClick(word) {
     instruction = getInstructionByWord(word);
     if(!passesOrderSettings(instruction.orderIndex)) return;
     if(instruction.reps == 0) finishClickQuestion(instruction);
@@ -1017,7 +1017,7 @@ finishedClick = (word) => {
 }
 
 
-packClickQuestionElements = (word) => {
+function packClickQuestionElements(word) {
     let elements = {};
     
     elements.correct = document.createElement("div");
@@ -1035,7 +1035,7 @@ packClickQuestionElements = (word) => {
     return elements;
 }
 
-packClickQuestion = () => {
+function packClickQuestion() {
     let place = checkPlaces[basicRandom(0,checkPlaces.length-1)];
     let reps = basicRandom(1,maxClickReps);
     let question = "click " + place.word + " " + reps + " times";
@@ -1043,13 +1043,13 @@ packClickQuestion = () => {
     return {questionType: "click", answer: place.word, question: question, elements: elements, reps: reps, originalReps: reps, place:place};
 }
 
-clickQuestion = () => {
+function clickQuestion() {
     let instruction = packClickQuestion();
     refreshClickQuestion(instruction);
     instructionOrder.push(instruction);
 }
 
-goToQuestion = () => {
+function goToQuestion() {
     let targetPlaceIndex = basicRandom(0,checkPlaces.length-1);
     if (instructionOrder.length < 1) {
         instructionOrder.push(packGoToQuestion(targetPlaceIndex)); // nothing to compare to
@@ -1067,7 +1067,7 @@ goToQuestion = () => {
     instructionOrder.push(packGoToQuestion(targetPlaceIndex));
 }
 
-getNewQuestionKind = () => {
+function getNewQuestionKind() {
     // pick for chance of moveto question
     let r = Math.random();
     let mathChance = 1.0 / mathQuestionsRate;
@@ -1105,22 +1105,23 @@ getNewQuestionKind = () => {
     goToQuestion();
 }
 
-fillQuestions = () => {
+function fillQuestions() {
     while (instructionOrder.length < numIncomingInstructions) newQuestion(false);
 }
 
-newQuestion = (answered = true, instruction_id = 0) => {
+function newQuestion(answered = true, instruction_id = 0) {
     getNewQuestionKind();
     if(answered) {
         questionAnswered(instruction_id);
     }
     questionRefresh();
 }
-questionAnswered = (instruction_id = 0) => {
+
+function questionAnswered(instruction_id = 0) {
     instructionOrder.splice(instruction_id,1);
 }
 
-removeItemAll = (arr, value) => {
+function removeItemAll(arr, value) {
   var i = 0;
   while (i < arr.length) {
     if (arr[i] === value) {
@@ -1145,7 +1146,7 @@ setMapVar = () => {
 */
 
 
-goodWall = (room, x,y) => {
+function goodWall(room, x,y) {
     wallcheck = [["","",""],["","",""],["","",""]];
     for(let xcheck = -1; xcheck <=1; xcheck++){
         for(let ycheck = -1; ycheck <=1; ycheck++){
@@ -1180,7 +1181,7 @@ goodWall = (room, x,y) => {
     return true;
 }
 
-goodWallPure = (room,x,y) => {
+function goodWallPure(room,x,y) {
     if(x < 0 || x >= room.mapBoundX || y < 0 || y >= room.mapBoundY) return false;
     wallcheck = [["","",""],["","",""],["","",""]];
     for(let xcheck = -1; xcheck <=1; xcheck++){
@@ -1200,7 +1201,7 @@ goodWallPure = (room,x,y) => {
     return true;
 }
 
-addRoom = (roomName = null, fromPlace = null) => {
+function addRoom(roomName = null, fromPlace = null) {
     let mapx = basicRandom(minMapX,maxMapX);
     let mapy = basicRandom(minMapY,maxMapY);
     
@@ -1238,7 +1239,7 @@ addRoom = (roomName = null, fromPlace = null) => {
     }
 }
 
-initializeRooms = (_numRooms,_minMapX,_maxMapX,_minMapY,_maxMapY) => {
+function initializeRooms(_numRooms,_minMapX,_maxMapX,_minMapY,_maxMapY) {
     for(let i = 0; i < _numRooms; i++){
         let mapx = basicRandom(_minMapX,_maxMapX);
         let mapy = basicRandom(_minMapY,_maxMapY);
@@ -1253,7 +1254,7 @@ initializeRooms = (_numRooms,_minMapX,_maxMapX,_minMapY,_maxMapY) => {
     }
 }
 
-addWarp = (roomStart, roomEnd, twoway = true) => {
+function addWarp(roomStart, roomEnd, twoway = true) {
     
     for(let i = 0; i <= 1000; i++){
         let randxStart = basicRandom(0,mapVar[roomStart].mapBoundX-1);
@@ -1299,7 +1300,7 @@ function addReturn(roomNum) {
     return false;
 }
 
-initializeWarps = () => {
+function initializeWarps() {
     for(let i = 1; i < numRooms; i++){
         if(bidirectionalWarps){
             addWarp(i,basicRandom(0,i-1),true);
@@ -1315,7 +1316,7 @@ initializeWarps = () => {
 }
 
 
-makeWallAny = (room) => {
+function makeWallAny(room) {
     let x = basicRandom(0,room.mapBoundX-1);
     let y = basicRandom(0,room.mapBoundY-1);
     if(goodWallPure(room,x,y)) {
@@ -1324,7 +1325,7 @@ makeWallAny = (room) => {
     }
 }
 
-makeWallNearby = (room) => {
+function makeWallNearby(room) {
     let r = basicRandom(0,room.walls.length-1);
     let x = room.walls[r].x;
     let y = room.walls[r].y;
@@ -1350,7 +1351,7 @@ makeWallNearby = (room) => {
 }
 
 
-wallAlgorithm = (room) => {
+function wallAlgorithm(room) {
     
     makeWallAny(room);
     for ( let i = 0; i < room.mapBoundX * room.mapBoundY * 10; i ++){
@@ -1365,7 +1366,7 @@ wallAlgorithm = (room) => {
     
 }
 
-doCommands = (wordListArray) => {
+function doCommands(wordListArray) {
     wordListArray = removeItemAll(wordListArray,"");
     for(let i = 0; i < wordListArray.length; i++){
         if(wordListArray[i].substr(0,5).toLowerCase() == "mapx "){
@@ -1590,7 +1591,7 @@ initElement.onclick = () => {
     
 }
 
-goInside = (room, x, y) => {
+function goInside(room, x, y) {
     let wentInside = false;
     mapVar[room].warps.forEach(w => {if(w.x == x && w.y == y){
         currentPosition.room = w.toRoom;
@@ -1644,7 +1645,7 @@ function goReturn(){
     displayMap();
 }
 
-let moveKeys = (event) => {
+function moveKeys(event) {
     if((event.key == "ArrowUp" || event.key =="w") && sessionStarted) moveUp(); 
     if((event.key == "ArrowDown" || event.key =="s") && sessionStarted) moveDown(); 
     if((event.key == "ArrowLeft" || event.key =="a") && sessionStarted) moveLeft(); 
@@ -1672,7 +1673,7 @@ document.body.addEventListener("keydown", (event)=>{
     moveKeys(event);
 });
 
-positionMatchingInstruction = (i) => {
+function positionMatchingInstruction(i) {
     if(instructionOrder[i].questionType == "math") return true;
     if(instructionOrder[i].questionType == "moveTo"){
         if((((currentPosition.x == instructionOrder[i].moveToX) && (currentPosition.y == instructionOrder[i].moveToY))) && (currentPosition.room == instructionOrder[i].moveToRoom)) return true;
@@ -1683,7 +1684,7 @@ positionMatchingInstruction = (i) => {
     return false;
 }
 
-positionMatching = () => {
+function positionMatching() {
     // in order only
     if(positionMatchingInstruction(0)) return true;
     if(answerOutOfOrder == false) return false; 
