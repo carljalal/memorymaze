@@ -830,6 +830,18 @@ downElement.onclick = () => {
     moveDown();
 }
 
+function getMoveToDisplayQuestion(instruction){
+    let s = ``;
+    s += `move ${getWordOfTargetCheckPlaceOfInstruction()} to room: ${instruction.room}`;
+    if (instruction.x != null) s += `, x: ${instruction.x}`;
+    if (instruction.y != null) s += `, y: ${instruction.y}`;
+    return s;
+}
+
+function getWordOfTargetCheckPlaceOfInstruction(instruction){
+    return checkPlaces[instruction.targetPlaceIndex].word;
+}
+
 questionRefresh = () => {
     if(instructionOrder[0].questionType == "moveTo"){
         checkPlaces[instructionOrder[0].targetPlaceIndex].pickedUp = true;
@@ -844,8 +856,9 @@ questionRefresh = () => {
     questionElement.innerHTML = "";
     for(let i = 0; i < instructionOrder.length; i++){
         if(instructionOrder[i].questionType == "moveTo"){
-            questionElement.innerHTML += "move " + checkPlaces[instructionOrder[i].targetPlaceIndex].word;
-            questionElement.innerHTML += " to room:" + instructionOrder[i].room + ", x:" + instructionOrder[i].x + ", y:" + instructionOrder[i].y;
+            //questionElement.innerHTML += "move " + checkPlaces[instructionOrder[i].targetPlaceIndex].word;
+            //questionElement.innerHTML += " to room:" + instructionOrder[i].room + ", x:" + instructionOrder[i].x + ", y:" + instructionOrder[i].y;
+            questionElement.innerHTML += getMoveToDisplayQuestion(instructionOrder[i]);
         }
         if (instructionOrder[i].questionType == "goTo"){
             questionElement.innerHTML += "go to " + checkPlaces[instructionOrder[i].targetPlaceIndex].word;
