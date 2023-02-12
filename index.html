@@ -26,7 +26,7 @@ let wordDict = [];
 let checkPlaces = [];
 let lastCheckPlace = {};
 let instructionOrder = [];
-let currentPosition = {x: 0, y: 0, room:0,pickedUpWord:""};
+let currentPosition = {x: 0, y: 0, room: 0, pickedUpWord: ""};
 let mapBoundX = 10;
 let mapBoundY = 10;
 let noTyping = true;
@@ -275,21 +275,20 @@ function getRandChar() {
 }
 
 
-function getXYRoom(){
-    let randroom = basicRandom(0, numRooms-1);
-    let randx = basicRandom(0,mapVar[randroom].mapBoundX-1);
-    let randy = basicRandom(0,mapVar[randroom].mapBoundY-1);
-    for(let i = 0; i <= 1000; i++){
-        if(mapVar[randroom].xy[randx][randy] != "Z" || !preventWallOverwrite) {
-            if(mapVar[randroom].xy[randx][randy] != "W") {
-                break;
-            }
+function getXYRoom(roomName){
+    let room = basicRandom(0, numRooms-1);
+    let x = basicRandom(0,mapVar[room].mapBoundX-1);
+    let y = basicRandom(0,mapVar[room].mapBoundY-1);
+    for(let i = 0; i <= defaultIterationTimeout; i++){
+        let char = mapVar[room].xy[x][y];
+        if((char != "Z" || !preventWallOverwrite) && (char != "O" || allowStacking) && char != "W" && char != "R" && mapVar[room].roomName != roomName) {
+            break;    
         }
-        randroom = basicRandom(0, numRooms-1);
-        randx = basicRandom(0,mapVar[randroom].mapBoundX-1);
-        randy = basicRandom(0,mapVar[randroom].mapBoundY-1);
+        room = basicRandom(0, numRooms-1);
+        x = basicRandom(0,mapVar[room].mapBoundX-1);
+        y = basicRandom(0,mapVar[room].mapBoundY-1);
     }
-    return {x:randx,y:randy,room:randroom};
+    return {x: x, y: y, room: room};
 }
 
 function addCheckPlace() {
@@ -332,7 +331,7 @@ function addCheckPlace() {
                 roomName = randWord;
                 addRoom(roomName, true);
             }
-            let p = getXYRoom();
+            let p = getXYRoom(roomName);
             if(!placesAreRooms) {roomName = p.room}
             lastCheckPlace = {x: p.x, y: p.y, room: p.room, roomName: roomName, hasRoom: placesAreRooms, word: randWord, wordType: wordType, svgConfig: thisSvgConfig};
             checkPlaces.push(lastCheckPlace);
@@ -366,8 +365,8 @@ function iterateUntilTrue(ftest, fgen){
     return r;
 }
 
-function getListOfPlacesMatchingRoomNumAndNotMatchingCheckPlace(roomNum, checkPlace){
-    return checkPlaces.filter(p => (p != checkPlace && p == roomNum));
+function getListOfCheckPlacesMatchingRoomNumAndNotMatchingCheckPlace(roomNum, checkPlace){
+    return checkPlaces.filter(p => (p != checkPlace && p.room == roomNum));
 }
 
 function getListOfWarpRoomNumsInRoom(roomNum){
@@ -385,8 +384,10 @@ function getConnectedRoomNumFromRoomNumAndAvoidCheckPlace(roomNum, checkPlace){
 
 function findSuitableRoomNum(checkPlace){
     let r = checkPlace.room;
-    for(let i = 0; i < 100; i++){
-        r = getConnectedRoomNumFromRoomNumAndAvoidCheckPlace(r);
+    if(numRooms == 1) return r;
+
+    for(let i = 0; (i < 100 || r == checkPlace.room) && i < defaultIterationTimeout; i++){
+        r = getConnectedRoomNumFromRoomNumAndAvoidCheckPlace(r, checkPlace);
     }
     return r;
 }
@@ -404,20 +405,25 @@ function randRoomNum(){
 
 function findSuitableMovePlace(checkPlace) {
     let room = getRoomNum(checkPlace);
-    let x = basicRandom(0,mapVar[room].mapBoundX-1);
-    let y = basicRandom(0,mapVar[room].mapBoundY-1);
-    for(let i = 0; i <= defaultIterationTimeout; i++){
-        if(mapVar[room].xy[x][y] != "Z" || !preventWallOverwrite) {
-            if(mapVar[room].xy[x][y] != "W") {
-                if(mapVar[room].xy[x][y] != "O" || allowStacking) {
-                    break;
-                }
-            }
-        }
-        room = basicRandom(0, numRooms-1);
+    let x = null;
+    let y = null;
+    if(!moveToAnyXY){
         x = basicRandom(0,mapVar[room].mapBoundX-1);
         y = basicRandom(0,mapVar[room].mapBoundY-1);
+        for(let i = 0; i <= defaultIterationTimeout; i++){
+            if(mapVar[room].xy[x][y] != "Z" || !preventWallOverwrite) {
+                if(mapVar[room].xy[x][y] != "W") {
+                    if(mapVar[room].xy[x][y] != "O" || allowStacking) {
+                        break;
+                    }
+                }
+            }
+            room = getRoomNum(checkPlace);
+            x = basicRandom(0,mapVar[room].mapBoundX-1);
+            y = basicRandom(0,mapVar[room].mapBoundY-1);
+        }
     }
+
     
     return {x: x , y: y , room: room};
 }
@@ -603,9 +609,14 @@ let isInstructionSVG = (c) => {
 }
 
 
-function checkAnswer(c = 0) {
+function checkAnswer(c = 0, preventEntry = false) {
+    if(getLetterOfCurrentPosition() == "R") return;
+    let withMoveTo = false;
+    let completedMoveTo = false;
+    if(c + 1 < instructionOrder.length){
+        if (instructionOrder[c+1].questionType == "moveTo") withMoveTo = true;
+    }
     let correct = false;
-    let preventFromGoingInside = false;
     if(instructionOrder[c].questionType == "math"){
         if(answerElement.value == instructionOrder[c].answer){
             if(basicRandom(0,addRate)==0) addCheckPlace();
@@ -616,8 +627,8 @@ function checkAnswer(c = 0) {
     }
     if(instructionOrder[c].questionType == "goTo" && correct == false){
         if(isInsideCheckPlaces(answerElement.value,c) || noTyping == true || isInstructionSVG(c)){
-            if(currentPosition.x == checkPlaces[instructionOrder[c].targetPlaceIndex].x 
-            && currentPosition.y == checkPlaces[instructionOrder[c].targetPlaceIndex].y 
+            if(((currentPosition.x == checkPlaces[instructionOrder[c].targetPlaceIndex].x 
+            && currentPosition.y == checkPlaces[instructionOrder[c].targetPlaceIndex].y ) || (placesAreRooms && !withMoveTo))
             && currentPosition.room == checkPlaces[instructionOrder[c].targetPlaceIndex].room ){                
                 if(basicRandom(0,addRate)==0) addCheckPlace();
                 if(!placesAreRooms && newRoomMode && basicRandom(0,newRoomRate)==0) addRoom();
@@ -630,6 +641,7 @@ function checkAnswer(c = 0) {
                     }
                 }
                 correct = true;
+                completedMoveTo = true;
             }
         }
     }
@@ -637,7 +649,7 @@ function checkAnswer(c = 0) {
         if(isInsideCheckPlaces(answerElement.value,c) || noTyping == true || isInstructionSVG(c)){
             if(((currentPosition.x == instructionOrder[c].moveToX 
             && currentPosition.y == instructionOrder[c].moveToY) || moveToAnyXY)
-            && currentPosition.room == instructionOrder[c].room){
+            && currentPosition.room == instructionOrder[c].room && getLetterOfCurrentPosition() == "X"){
                 if(moveToAnyXY){
                     checkPlaces[instructionOrder[c].targetPlaceIndex].x = currentPosition.x;
                     checkPlaces[instructionOrder[c].targetPlaceIndex].y = currentPosition.y;
@@ -648,10 +660,11 @@ function checkAnswer(c = 0) {
                 }
                 checkPlaces[instructionOrder[c].targetPlaceIndex].room = instructionOrder[c].moveToRoom;
                 checkPlaces[instructionOrder[c].targetPlaceIndex].pickedUp = false;
+                currentPosition.holding = checkPlaces[instructionOrder[c].targetPlaceIndex];
                 refreshWordsInside();
                 newQuestion(true, c);
                 correct = true;
-                preventFromGoingInside = true;
+                preventEntry = true;
             }
         }
     }
@@ -664,16 +677,19 @@ function checkAnswer(c = 0) {
         scoreCorrect();
         refreshScore();
     }
-    if(!preventFromGoingInside && placesAreRooms){
+    if(!preventEntry && placesAreRooms){
         goInsidePlace();
+    }
+    if (completedMoveTo){
+        checkAnswer(c);
     }
 }
 
-function checkAnswers() {
+function checkAnswers(preventEntry = false) {
     if(answerOutOfOrder){
-        for(let i = 0; i < instructionOrder.length;i++) checkAnswer(i);
+        for(let i = 0; i < instructionOrder.length;i++) checkAnswer(i, preventEntry);
     }
-    else checkAnswer(0);
+    else checkAnswer(0,preventEntry);
 }
 
 checkElement.onclick = () => {
@@ -877,10 +893,10 @@ downElement.onclick = () => {
 
 function getMoveToDisplayQuestion(instruction){
     let s = ``;
-    s += `move ${getWordOfTargetCheckPlaceOfInstruction()}`
+    s += `move ${getWordOfTargetCheckPlaceOfInstruction(instruction)}`
     if(placesAreRooms) s += ` inside `;
     else s += ` to room: `;
-    s += `${instruction.room}`;
+    s += `${getRoomNameByRoomNum(instruction.room)}`;
     if (instruction.x != null) s += `, x: ${instruction.x}`;
     if (instruction.y != null) s += `, y: ${instruction.y}`;
     return s;
@@ -890,11 +906,18 @@ function getWordOfTargetCheckPlaceOfInstruction(instruction){
     return checkPlaces[instruction.targetPlaceIndex].word;
 }
 
-function getGoToDisplayQuestion(instruction){
+function getGoToDisplayQuestion(instruction, i){
     let s = "";
-    s += `go `;
-    if(placesAreRooms) s += `inside `;
-    else s += `to `;
+
+    let withMoveTo = false;
+    if(i + 1 < instructionOrder.length){
+        if(instructionOrder[i+1].questionType == "moveTo"){
+            withMoveTo = true;
+        }
+    }
+
+    if(placesAreRooms && !withMoveTo) s += `go inside `;
+    else s += `pick up `;
     s += getWordOfTargetCheckPlaceOfInstruction(instruction);
     return s;
 }
@@ -919,7 +942,7 @@ function questionRefresh () {
         }
         else if (instructionOrder[i].questionType == "goTo"){
             //questionElement.innerHTML += "go to " + checkPlaces[instructionOrder[i].targetPlaceIndex].word;
-            questionElement.innerHTML += getGoToDisplayQuestion(instructionOrder[i]);
+            questionElement.innerHTML += getGoToDisplayQuestion(instructionOrder[i], i);
         }
         else if (instructionOrder[i].questionType == "math"){
             questionElement.innerHTML += "calc " + instructionOrder[i].question;
@@ -1279,7 +1302,7 @@ function addRoom(roomName = null, fromPlace = null) {
         }
     }
     if(allowWalls) wallAlgorithm(mapVar[roomNum]);
-   
+    
     if (placesAreRooms){
         addReturn(roomNum);
     }
@@ -1592,6 +1615,9 @@ function doCommands(wordListArray) {
             i--;
         }
     }
+    if(noTyping && placesAreRooms){
+        allowStacking = false;
+    }
 }
 
 initElement.onclick = () => {
@@ -1709,6 +1735,7 @@ function goReturn(){
     currentPosition.room = p.room;
     currentPosition.x = p.x;
     currentPosition.y = p.y;
+    checkAnswers(true);
     displayMap();
 }
 
