@@ -1,3 +1,6 @@
+Version 1.0.0
+
+
 # memorymaze
 
 brain training / word memorization app
