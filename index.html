@@ -609,6 +609,7 @@ let isInstructionSVG = (c) => {
 }
 
 
+
 function checkAnswer(c = 0, preventEntry = false) {
     if(getLetterOfCurrentPosition() == "R") return;
     let withMoveTo = false;
@@ -628,8 +629,9 @@ function checkAnswer(c = 0, preventEntry = false) {
     if(instructionOrder[c].questionType == "goTo" && correct == false){
         if(isInsideCheckPlaces(answerElement.value,c) || noTyping == true || isInstructionSVG(c)){
             if(((currentPosition.x == checkPlaces[instructionOrder[c].targetPlaceIndex].x 
-            && currentPosition.y == checkPlaces[instructionOrder[c].targetPlaceIndex].y ) || (placesAreRooms && !withMoveTo))
-            && currentPosition.room == checkPlaces[instructionOrder[c].targetPlaceIndex].room ){                
+            && currentPosition.y == checkPlaces[instructionOrder[c].targetPlaceIndex].y ) 
+            && currentPosition.room == checkPlaces[instructionOrder[c].targetPlaceIndex].room)
+            || (placesAreRooms && !withMoveTo && getRoomNumByRoomName(checkPlaces[instructionOrder[c].targetPlaceIndex].word) == currentPosition.room)){                
                 if(basicRandom(0,addRate)==0) addCheckPlace();
                 if(!placesAreRooms && newRoomMode && basicRandom(0,newRoomRate)==0) addRoom();
                 newQuestion(true, c);
