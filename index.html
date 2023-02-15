@@ -293,6 +293,7 @@ function getXYRoom(roomName){
         y = basicRandom(0,mapVar[room].mapBoundY-1);
     }
     if(!prepared) alert("unprepared");
+    console.log("allowStacking: "+ allowStacking);
     return {x: x, y: y, room: room};
 }
 
