@@ -9,6 +9,7 @@ textarea {touch-action: manipulation;}
 </head>
 <body>
 Version 1.0.0
+<br>
 <script>
 
 
@@ -277,18 +278,21 @@ function getRandChar() {
 
 
 function getXYRoom(roomName){
+    let prepared = false;
     let room = basicRandom(0, numRooms-1);
     let x = basicRandom(0,mapVar[room].mapBoundX-1);
     let y = basicRandom(0,mapVar[room].mapBoundY-1);
     for(let i = 0; i <= defaultIterationTimeout; i++){
         let char = mapVar[room].xy[x][y];
         if((char != "Z" || !preventWallOverwrite) && (char != "O" || allowStacking) && char != "W" && char != "R" && mapVar[room].roomName != roomName) {
-            break;    
+            prepared = true;
+            break;
         }
         room = basicRandom(0, numRooms-1);
         x = basicRandom(0,mapVar[room].mapBoundX-1);
         y = basicRandom(0,mapVar[room].mapBoundY-1);
     }
+    if(!prepared) alert("unprepared");
     return {x: x, y: y, room: room};
 }
 
