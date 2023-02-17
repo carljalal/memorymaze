@@ -1,4 +1,5 @@
-Version 1.0.2
+Version 1.0.8
+can go inside words as rooms
 
 
 # memorymaze
@@ -6,17 +7,16 @@ Version 1.0.2
 brain training / word memorization app
 
 high level concepts
-- solving mazes
+- train spatial memory
 - word memorization
+- color/shape memorization (svg abstract pic)
+- side tasks (timing, math, typing, clicking)
 - controls -- up,down,left,right,check (wasd,click/tap,enter)
 - scorecard
 - feedback
 
-thoughts:
-- timer
-- multiple maps
-- more controls over adding new rooms, words, rates, difficulty
+thoughts for future:
 - save / load state / map
-- exportable score history logging
 - obstacles
-- keys/doors
+- keys/doors / logic
+- session history logging

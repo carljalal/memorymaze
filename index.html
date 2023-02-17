@@ -8,7 +8,7 @@ textarea {touch-action: manipulation;}
 </style>
 </head>
 <body>
-Version 1.0.7
+Version 1.0.8
 <br>
 <script>
 
@@ -401,7 +401,7 @@ function findSuitableRoomNum(checkPlace){
 
     for(let i = 0; (i < 100 || r == checkPlace.room) && i < defaultIterationTimeout; i++){
         r = getConnectedRoomNumFromRoomNumAndAvoidCheckPlace(r, checkPlace);
-        if (r == getRoomNumByRoomName(checkPlace.word) && !isInsideOfItself()) alert("went to unsuitable room");
+        if (r == getRoomNumByRoomName(checkPlace.word) && !isInsideOfItself(checkPlace)) alert("went to unsuitable room");
     }
     return r;
 }
