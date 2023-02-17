@@ -8,7 +8,7 @@ textarea {touch-action: manipulation;}
 </style>
 </head>
 <body>
-Version 1.0.5
+Version 1.0.6
 <br>
 <script>
 
@@ -294,6 +294,7 @@ function getXYRoom(roomName){
     }
     if(!prepared && numRooms > 1) alert("unprepared");
     console.log("allowStacking: "+ allowStacking);
+    console.log("put checkplace in room " + mapVar[room].roomName + " connects to word/roomName " + roomName);
     return {x: x, y: y, room: room};
 }
 
