@@ -8,7 +8,7 @@ textarea {touch-action: manipulation;}
 </style>
 </head>
 <body>
-Version 1.0.6
+Version 1.0.7
 <br>
 <script>
 
@@ -384,9 +384,15 @@ function getConnectedRoomNumFromRoomNumAndAvoidCheckPlace(roomNum, checkPlace){
     let list = getListOfCheckPlacesMatchingRoomNumAndNotMatchingCheckPlace(roomNum, checkPlace);
     list = list.map(p => getRoomNumByRoomName(p.word));
     let retRoom = getCheckPlaceByRoomName(getRoomNameByRoomNum(roomNum)).room;
-    list.push(retRoom);
+    if (retRoom != roomNum) {
+        list.push(retRoom);
+    }
     // getListOfWarpRoomNumsInRoom(roomNum);
     return randomItem(list);
+}
+
+function isInsideOfItself(checkPlace){
+    return checkPlace.room == getRoomNumByRoomName(checkPlace.word);
 }
 
 function findSuitableRoomNum(checkPlace){
@@ -395,7 +401,7 @@ function findSuitableRoomNum(checkPlace){
 
     for(let i = 0; (i < 100 || r == checkPlace.room) && i < defaultIterationTimeout; i++){
         r = getConnectedRoomNumFromRoomNumAndAvoidCheckPlace(r, checkPlace);
-        if (r == getRoomNumByRoomName(checkPlace.word)) alert("went to unsuitable room");
+        if (r == getRoomNumByRoomName(checkPlace.word) && !isInsideOfItself()) alert("went to unsuitable room");
     }
     return r;
 }
@@ -1621,6 +1627,8 @@ function doCommands(wordListArray) {
     if(noTyping && placesAreRooms){
         allowStacking = false;
     }
+    console.log("parsed commands");
+    console.log("allowStacking: " + allowStacking);
 }
 
 initElement.onclick = () => {
@@ -1637,6 +1645,7 @@ initElement.onclick = () => {
     wordListString = wordListString.replace("\r\g","");
     let wordListArray = wordListString.split("\n");
     doCommands(wordListArray);
+    
     wordDict = wordListArray;
 
 
