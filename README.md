@@ -1,4 +1,7 @@
-Version 1.0.8
+1.0.9
+fix stacking initialization
+
+1.0.8
 can go inside words as rooms
 
 
