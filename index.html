@@ -8,7 +8,7 @@ textarea {touch-action: manipulation;}
 </style>
 </head>
 <body>
-Version 1.0.2
+Version 1.0.5
 <br>
 <script>
 
@@ -394,6 +394,7 @@ function findSuitableRoomNum(checkPlace){
 
     for(let i = 0; (i < 100 || r == checkPlace.room) && i < defaultIterationTimeout; i++){
         r = getConnectedRoomNumFromRoomNumAndAvoidCheckPlace(r, checkPlace);
+        if (r == getRoomNumByRoomName(checkPlace.word)) alert("went to unsuitable room");
     }
     return r;
 }
@@ -649,7 +650,7 @@ function checkAnswer(c = 0, preventEntry = false) {
                     }
                 }
                 correct = true;
-                completedMoveTo = true;
+                
             }
         }
     }
@@ -672,6 +673,7 @@ function checkAnswer(c = 0, preventEntry = false) {
                 refreshWordsInside();
                 newQuestion(true, c);
                 correct = true;
+                completedMoveTo = true;
                 preventEntry = true;
             }
         }
@@ -700,15 +702,7 @@ function checkAnswers(preventEntry = false) {
     else checkAnswer(0,preventEntry);
 }
 
-checkElement.onclick = () => {
-    let room = currentPosition.room;
-    let x = currentPosition.x;
-    let y = currentPosition.y;
-    if(mapVar[room].xy[x][y] == "W"){
-        goInside(room, x, y);
-    }
-    else checkAnswers(); 
-}
+
 
 function refreshMapStyle() {
     mapElement.style.fontFamily = "Courier New";
@@ -1755,22 +1749,26 @@ function moveKeys(event) {
     if (noTyping == false) answerElement.value = "";
 }
 
+function onEnter(){
+    let room = currentPosition.room;
+    let x = currentPosition.x;
+    let y = currentPosition.y;
+    if(getLetterOfCurrentPosition() == "W"){
+        goInside(room, x, y);
+    }
+    else if(getLetterOfCurrentPosition() == "R"){
+        goReturn();
+    }
+    else checkAnswers(); 
+}
+
 document.body.addEventListener("keydown", (event)=>{
     if(!sessionStarted) return;
     if(document.activeElement == answerElement){
         if((positionMatching() && !noTyping)) return;
     }
     if(event.key == "Enter" && sessionStarted) {
-        let room = currentPosition.room;
-        let x = currentPosition.x;
-        let y = currentPosition.y;
-        if(getLetterOfCurrentPosition() == "W"){
-            goInside(room, x, y);
-        }
-        else if(getLetterOfCurrentPosition() == "R"){
-            goReturn();
-        }
-        else checkAnswers(); 
+        onEnter();
     }
     moveKeys(event);
 });
@@ -1812,6 +1810,10 @@ answerElement.addEventListener("keydown", (event)=>{
         }
     }
 });
+
+checkElement.onclick = () => {
+    onEnter();
+}
 
 
 </script>
