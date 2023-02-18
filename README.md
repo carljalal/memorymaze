@@ -1,3 +1,6 @@
+1.0.11
+edit console logging
+
 1.0.10
 debug find suitable room
 

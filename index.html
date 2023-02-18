@@ -8,7 +8,7 @@ textarea {touch-action: manipulation;}
 </style>
 </head>
 <body>
-Version 1.0.10
+Version 1.0.11
 <br>
 <script>
 
@@ -293,7 +293,7 @@ function getXYRoom(roomName){
         y = basicRandom(0,mapVar[room].mapBoundY-1);
     }
     if(!prepared && numRooms > 1) alert("unprepared");
-    console.log("allowStacking: "+ allowStacking);
+    //console.log("allowStacking: "+ allowStacking);
     console.log("put checkplace in room " + mapVar[room].roomName + " connects to word/roomName " + roomName);
     displayMap();
     return {x: x, y: y, room: room};
@@ -389,7 +389,7 @@ function getConnectedRoomNumFromRoomNumAndAvoidCheckPlace(roomNum, checkPlace){
         list.push(retRoom);
     }
     // getListOfWarpRoomNumsInRoom(roomNum);
-    console.log(`we're at room ${mapVar[roomNum].roomName} aka ${roomNum} and avoiding ${checkPlace.word} aka ${getRoomNumByRoomName(checkPlace.word)} with list ` + list);
+    //console.log(`we're at room ${mapVar[roomNum].roomName} aka ${roomNum} and avoiding ${checkPlace.word} aka ${getRoomNumByRoomName(checkPlace.word)} with list ` + list);
     return randomItem(list);
 }
 
@@ -405,7 +405,7 @@ function findSuitableRoomNum(checkPlace){
         let last_r = r;
         r = getConnectedRoomNumFromRoomNumAndAvoidCheckPlace(r, checkPlace);
         if (r == getRoomNumByRoomName(checkPlace.word) && !isInsideOfItself(checkPlace)) {
-            console.log(`for place ${checkPlace.word} went to unsuitable room ${r} aka ${mapVar[r].roomName} from ${last_r} aka ${mapVar[last_r].roomName}`);
+            //console.log(`for place ${checkPlace.word} went to unsuitable room ${r} aka ${mapVar[r].roomName} from ${last_r} aka ${mapVar[last_r].roomName}`);
         }
     }
     return r;
