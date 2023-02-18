@@ -1,3 +1,6 @@
+1.0.10
+debug find suitable room
+
 1.0.9
 fix stacking initialization
 
