@@ -8,7 +8,7 @@ textarea {touch-action: manipulation;}
 </style>
 </head>
 <body>
-Version 1.0.11
+Version 1.0.12
 <br>
 <script>
 
@@ -399,14 +399,16 @@ function isInsideOfItself(checkPlace){
 
 function findSuitableRoomNum(checkPlace){
     let r = checkPlace.room;
+    let last_r = r;
     if(numRooms == 1) return r;
     console.log(`starting in room ${r} aka ${mapVar[r].roomName} for place ${checkPlace.Word} with roomnum ${getRoomNumByRoomName(checkPlace.word)}`)
-    for(let i = 0; (i < 100 || r == checkPlace.room) && i < defaultIterationTimeout; i++){
-        let last_r = r;
+    for(let i = 0; (i < 100 || r == checkPlace.room || r == getRoomNumByRoomName(checkPlace.word)) && i < defaultIterationTimeout; i++){
+        last_r = r;
         r = getConnectedRoomNumFromRoomNumAndAvoidCheckPlace(r, checkPlace);
-        if (r == getRoomNumByRoomName(checkPlace.word) && !isInsideOfItself(checkPlace)) {
-            //console.log(`for place ${checkPlace.word} went to unsuitable room ${r} aka ${mapVar[r].roomName} from ${last_r} aka ${mapVar[last_r].roomName}`);
-        }
+        
+    }
+    if (r == getRoomNumByRoomName(checkPlace.word) || isInsideOfItself(checkPlace)) {
+        console.log(`for place ${checkPlace.word} went to possibly unsuitable room ${r} aka ${mapVar[r].roomName} from ${last_r} aka ${mapVar[last_r].roomName}`);
     }
     return r;
 }
