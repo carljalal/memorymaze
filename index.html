@@ -8,7 +8,7 @@ textarea {touch-action: manipulation;}
 </style>
 </head>
 <body>
-Version 1.0.12
+Version 1.1.0
 <br>
 <script>
 
@@ -55,7 +55,7 @@ let allowWalls = true;
 let viewDiameter = 5;
 let viewRange = 2;
 let addRate = 10;
-let numStartingPlaces = 4;
+let numStartingPlaces = 0;
 let allowHints = true;
 let multipleRooms = true;
 let numRooms = 0;
@@ -80,9 +80,9 @@ let answering = false;
 let mathQuestions = true;
 let mathQuestionsRate = 5;
 let mathQuestionsDepth = 4;
-let clickQuestions = true;
+let clickQuestions = false;
 let clickQuestionsRate = 5;
-let timerQuestions = true;
+let timerQuestions = false;
 let timerQuestionsRate = 0.03;
 let paused = false;
 let SVGQuestions = false;
@@ -90,9 +90,33 @@ let SVGQuestionsRate = 1;
 let maxClickReps = 5;
 let moveToAnyXY = false;
 let placesAreRooms = false;
+let automaticAdd = false;
 
 let mapVar = [];
 let displayMapVar = [];
+
+let numCorrect = 0;
+let numSteps = 0;
+
+
+let mapElement = null;
+let brElement = null;
+let leftElement = null;
+let rightElement = null;
+let pickupElement = null;
+let upElement = null;
+let downElement = null;
+let putdownElement = null;
+let initElement = null;
+let questionElement = null;
+let answerElement = null;
+let historyElement = null;
+let hintElement = null;
+let feedbackElement = null;
+let scoreElement = null;
+let checkElement = null;
+let pauseElement = null;
+let addWordElement = null;
 
 
 
@@ -181,18 +205,6 @@ function randSVGConfig() {
 
 
 
-let pauseElement = document.createElement("button");
-pauseElement.innerHTML = "pause";
-pauseElement.onclick = () => {
-    if(paused) {
-        paused = false;
-        pauseElement.innerHTML = "pause";
-    }
-    else {
-        paused = true;
-        pauseElement.innerHTML = "unpause";
-    }
-}
 
 
 
@@ -299,7 +311,27 @@ function getXYRoom(roomName){
     return {x: x, y: y, room: room};
 }
 
+
+function addCheckPlaceManual(wordToAdd) {
+    if(wordToAdd.trim() == "") return
+    roomName = null
+    if (placesAreRooms) {
+        roomName = wordToAdd;
+        addRoom(roomName, true);
+    }
+    let p = getXYRoom(roomName);
+    if(!placesAreRooms) {roomName = p.room}
+    placeToAdd = {x: p.x, y: p.y, room: p.room, roomName: roomName, hasRoom: placesAreRooms, word: wordToAdd, wordType: "default", svgConfig: null};
+    checkPlaces.push(placeToAdd);
+    mapVar[p.room].places.push(placeToAdd);
+    if(allowHints){
+        feedbackElement.textContent += "new place added:\n";
+        feedbackElement.textContent += JSON.stringify(placeToAdd);
+    }
+}
+
 function addCheckPlace() {
+    if(automaticAdd == false) return
     let randWord = "";
     let roomName = null;
     // make sure it's unique
@@ -450,110 +482,157 @@ function findSuitableMovePlace(checkPlace) {
 }
 
 
-mapElement = document.createElement("div");
-mapElement.style.display = "none";
-document.body.append(mapElement);
-
-mapElement.addEventListener('dblclick', function(event) {
-    event.preventDefault();
-}, { passive: false });
+function addCheckPlaceButton(){
+    addCheckPlaceManual(addWordElement.textbox.value)
+    addWordElement.textbox.value = ""
+    if(checkPlaces.length == 2) fillQuestions();
+}
 
 
-brElement = document.createElement("div");
-document.body.append(brElement);
-brElement.innerHTML = "<br>";
+//? Append elements
+function append_addword(){
+    addWordElement = document.createElement("div")
+    addWordElement.description = document.createElement("div")
+    addWordElement.textbox = document.createElement("input")
+    addWordElement.buttonAdd = document.createElement("button")
+    addWordElement.description.textContent = "add word manually:"
+    addWordElement.buttonAdd.textContent = "add"
+    addWordElement.append(addWordElement.description)
+    addWordElement.append(addWordElement.textbox)
+    addWordElement.append(addWordElement.buttonAdd)
+    document.body.append(addWordElement)
+    
+    addWordElement.buttonAdd.addEventListener("click", addCheckPlaceButton)
+}
 
-leftElement = document.createElement("button");
-rightElement = document.createElement("button");
-pickupElement = document.createElement("button");
-upElement = document.createElement("button");
-downElement = document.createElement("button");
-putdownElement = document.createElement("button");
-initElement = document.createElement("button");
-questionElement = document.createElement("div");
-
-questionElement.style.fontFamily = "Verdana";
-questionElement.style.fontSize = "20px";
-questionElement.style.border = "5px solid black";
-answerElement = document.createElement("textarea");
-historyElement = document.createElement("div");
-hintElement = document.createElement("div");
-feedbackElement = document.createElement("div");
-feedbackElement.style.fontFamily = "Verdana";
-feedbackElement.style.fontSize = "10px";
-feedbackElement.style.whiteSpace = "pre";
-feedbackElement.style.border = "2px solid red";
-
-
-checkElement = document.createElement("button");
-scoreElement = document.createElement("div");
-scoreElement.style.border = "2px solid lime";
-
-pickupElement.innerHTML = "pick up";
-upElement.innerHTML = "go up!";
-downElement.innerHTML = "go down!";
-putdownElement.innerHTML = "put down";
-initElement.innerHTML = "start";
-questionElement.innerHTML = "";
-historyElement.innerHTML = "";
-hintElement.innerHTML = "";
-
-document.body.append(questionElement)
-document.body.append(checkElement);
-//document.body.append(upElement)
-//document.body.append(downElement)
-//document.body.append(leftElement);
-//document.body.append(rightElement);
-document.body.append(pickupElement)
-document.body.append(putdownElement)
-document.body.append(initElement)
-
-document.body.append(document.createElement("br"));
-document.body.append(document.createElement("br"));
+function append_pausebutton(){
+    pauseElement = document.createElement("button");
+    pauseElement.innerHTML = "pause";
+    pauseElement.onclick = () => {
+        if (paused) {
+            paused = false;
+            pauseElement.innerHTML = "pause";
+        }
+        else {
+            paused = true;
+            pauseElement.innerHTML = "unpause";
+        }
+    }
+    document.body.append(pauseElement);
+}
 
 
-insideElement = document.createElement("div");
-insideElement.style.fontStyle = "italic";
-insideElement.style.border = "4px solid purple"
-document.body.append(insideElement);
-document.body.append(document.createElement("br"));
+append_elements();
 
-document.body.append(hintElement)
-document.body.append(historyElement)
-document.body.append(answerElement)
-document.body.append(document.createElement("br"));
-document.body.append(feedbackElement)
-document.body.append(document.createElement("br"));
-document.body.append(document.createElement("br"));
-document.body.append(scoreElement)
-document.body.append(document.createElement("br"));
-document.body.append(document.createElement("br"));
-document.body.append(pauseElement);
+function append_elements(){
+    mapElement = document.createElement("div");
+    mapElement.style.display = "none";
+    document.body.append(mapElement);
 
-questionElement.style.padding = "5px";
-insideElement.style.padding = "5px";
-feedbackElement.style.padding = "5px";
-scoreElement.style.padding = "5px";
+    mapElement.addEventListener('dblclick', function(event) {
+        event.preventDefault();
+    }, { passive: false });
 
-questionElement.style.margin = "5px";
-insideElement.style.margin = "5px";
-feedbackElement.style.margin = "5px";
-scoreElement.style.margin = "5px";
+    brElement = document.createElement("div");
+    document.body.append(brElement);
+    brElement.innerHTML = "<br>";
+
+    leftElement = document.createElement("button");
+    rightElement = document.createElement("button");
+    pickupElement = document.createElement("button");
+    upElement = document.createElement("button");
+    downElement = document.createElement("button");
+    putdownElement = document.createElement("button");
+    initElement = document.createElement("button");
+    questionElement = document.createElement("div");
+
+    questionElement.style.fontFamily = "Verdana";
+    questionElement.style.fontSize = "20px";
+    questionElement.style.border = "5px solid black";
+    answerElement = document.createElement("textarea");
+    historyElement = document.createElement("div");
+    hintElement = document.createElement("div");
+    feedbackElement = document.createElement("div");
+    feedbackElement.style.fontFamily = "Verdana";
+    feedbackElement.style.fontSize = "10px";
+    feedbackElement.style.whiteSpace = "pre";
+    feedbackElement.style.border = "2px solid red";
 
 
-leftElement.innerHTML = "go left!";
-rightElement.innerHTML = "go right!";
+    checkElement = document.createElement("button");
+    scoreElement = document.createElement("div");
+    scoreElement.style.border = "2px solid lime";
+
+    pickupElement.innerHTML = "pick up";
+    upElement.innerHTML = "go up!";
+    downElement.innerHTML = "go down!";
+    putdownElement.innerHTML = "put down";
+    initElement.innerHTML = "start";
+    questionElement.innerHTML = "";
+    historyElement.innerHTML = "";
+    hintElement.innerHTML = "";
+
+    document.body.append(questionElement)
+    document.body.append(checkElement);
+    //document.body.append(upElement)
+    //document.body.append(downElement)
+    //document.body.append(leftElement);
+    //document.body.append(rightElement);
+    document.body.append(pickupElement)
+    document.body.append(putdownElement)
+    document.body.append(initElement)
+
+    document.body.append(document.createElement("br"));
+    document.body.append(document.createElement("br"));
+
+
+    insideElement = document.createElement("div");
+    insideElement.style.fontStyle = "italic";
+    insideElement.style.border = "4px solid purple"
+    document.body.append(insideElement);
+    document.body.append(document.createElement("br"));
+
+    document.body.append(hintElement)
+    document.body.append(historyElement)
+    document.body.append(answerElement)
+    document.body.append(document.createElement("br"));
+    document.body.append(feedbackElement)
+    document.body.append(document.createElement("br"));
+    document.body.append(document.createElement("br"));
+    document.body.append(scoreElement)
+    document.body.append(document.createElement("br"));
+    document.body.append(document.createElement("br"));
+
+    append_pausebutton();
+
+    append_addword();
+    
+
+    questionElement.style.padding = "5px";
+    insideElement.style.padding = "5px";
+    feedbackElement.style.padding = "5px";
+    scoreElement.style.padding = "5px";
+
+    questionElement.style.margin = "5px";
+    insideElement.style.margin = "5px";
+    feedbackElement.style.margin = "5px";
+    scoreElement.style.margin = "5px";
+
+
+    leftElement.innerHTML = "go left!";
+    rightElement.innerHTML = "go right!";
 
 
 
-checkElement.innerHTML = "select";
+    checkElement.innerHTML = "select";
 
-answerElement.placeholder = "write list here (each word/phrase separated by a new line)"
-answerElement.cols = 50
-answerElement.rows = 10
+    answerElement.placeholder = "write list here (each word/phrase separated by a new line)"
+    answerElement.cols = 50
+    answerElement.rows = 10
+}
 
-let numCorrect = 0;
-let numSteps = 0;
+
+
 
 
 
@@ -1208,6 +1287,7 @@ function getNewQuestionKind() {
 }
 
 function fillQuestions() {
+    if (checkPlaces.length < 2) return
     while (instructionOrder.length < numIncomingInstructions) newQuestion(false);
 }
 
@@ -1595,13 +1675,13 @@ function doCommands(wordListArray) {
             wordListArray.splice(i,1);
             i--;
         }
-        else if(wordListArray[i].substr(0,7).toLowerCase() == "noclick"){
-            clickQuestions = false;
+        else if(wordListArray[i].substr(0,7).toLowerCase() == "clickquestions"){
+            clickQuestions = true;
             wordListArray.splice(i,1);
             i--;
         }
-        else if(wordListArray[i].substr(0,7).toLowerCase() == "notimer"){
-            timerQuestions = false;
+        else if(wordListArray[i].substr(0,7).toLowerCase() == "timerquestions"){
+            timerQuestions = true;
             wordListArray.splice(i,1);
             i--;
         }

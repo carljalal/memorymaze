@@ -1,3 +1,6 @@
+1.1.0
+new feature -> add word manually
+
 1.0.12
 debug find suitable room
 
