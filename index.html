@@ -486,6 +486,7 @@ function addCheckPlaceButton(){
     addCheckPlaceManual(addWordElement.textbox.value)
     addWordElement.textbox.value = ""
     if(checkPlaces.length == 2) fillQuestions();
+    if(document.activeElement == addWordElement.buttonAdd) document.activeElement.blur()
 }
 
 
@@ -1861,6 +1862,10 @@ function onEnter(){
 
 document.body.addEventListener("keydown", (event)=>{
     if(!sessionStarted) return;
+    if(document.activeElement == addWordElement.textbox) {
+        if (event.key == "Enter") addCheckPlaceButton();
+        return;
+    }
     if(document.activeElement == answerElement){
         if((positionMatching() && !noTyping)) return;
     }
