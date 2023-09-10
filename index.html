@@ -1402,7 +1402,7 @@ function addRoom(roomName = null, fromPlace = null) {
         }
     }
     if(allowWalls) wallAlgorithm(mapVar[roomNum]);
-    
+
     let warpRoomNum = -1;
     if (placesAreRooms){
         addReturn(roomNum);
@@ -1743,9 +1743,14 @@ initElement.onclick = () => {
     wordListString = wordListString.replace("\r\g","");
     let wordListArray = wordListString.split("\n");
     doCommands(wordListArray);
+
+    
     
     wordDict = wordListArray;
 
+    // if randchars, we have to initialize at least 2 places
+    if(randchars) numStartingPlaces = Math.max(2,wordDict.length)
+    else numStartingPlaces = wordDict.length
 
     if (noTyping == true) {
         answerElement.style.display = "none";
