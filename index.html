@@ -8,9 +8,11 @@ textarea {touch-action: manipulation;}
 </style>
 </head>
 <body>
-Version 1.1.0
 <br>
 <script>
+
+// Version 1.1.0
+
 
 
 document.body.addEventListener('dblclick', function(event) {
@@ -59,6 +61,7 @@ let numStartingPlaces = 0;
 let allowHints = true;
 let multipleRooms = true;
 let numRooms = 0;
+let numStartingRooms = 1;
 let numInitialRooms = 4;
 let numExtraConnections = 0;
 let minMapX = 4;
@@ -1400,39 +1403,44 @@ function addRoom(roomName = null, fromPlace = null) {
     }
     if(allowWalls) wallAlgorithm(mapVar[roomNum]);
     
+    let warpRoomNum = -1;
     if (placesAreRooms){
         addReturn(roomNum);
     }
     else{
-        let warpRoomNum = -1;
-        if(bidirectionalWarps){
-            warpRoomNum = basicRandom(0,roomNum-1);
-            addWarp(roomNum,warpRoomNum,true);
-        }
-        else{
-            addWarp(roomNum,basicRandom(0,roomNum-1),false);
-            warpRoomNum = basicRandom(0,roomNum-1);
-            addWarp(warpRoomNum,roomNum,false);
+        if(mapVar.length > 1){
+            
+            if(bidirectionalWarps){
+                warpRoomNum = basicRandom(0,roomNum-1);
+                addWarp(roomNum,warpRoomNum,true);
+            }
+            else{
+                addWarp(roomNum,basicRandom(0,roomNum-1),false);
+                warpRoomNum = basicRandom(0,roomNum-1);
+                addWarp(warpRoomNum,roomNum,false);
+            }
         }
     }
     numRooms++;
     if(allowHints && !placesAreRooms){
         feedbackElement.textContent += "new room added:\n";
-        feedbackElement.textContent += "warp from room " + warpRoomNum;
+        if(warpRoomNum > -1) feedbackElement.textContent += "warp from room " + warpRoomNum;
     }
 }
 
 function initializeRooms(_numRooms,_minMapX,_maxMapX,_minMapY,_maxMapY) {
-    for(let i = 0; i < _numRooms; i++){
-        let mapx = basicRandom(_minMapX,_maxMapX);
-        let mapy = basicRandom(_minMapY,_maxMapY);
-        mapVar.push({xy:[],walls:[],places:[],warps:[],mapBoundX:mapx,mapBoundY:mapy});
-        for(let x = 0; x < mapx; x++){
-            mapVar[i].xy.push([]);
-            for(let y = 0; y < mapy; y++){
-                mapVar[i].xy[x].push("X");
-            }
-        }
+    for(let i = 0; i < numStartingRooms; i++){
+        addRoom()
+        return
+        // let mapx = basicRandom(_minMapX,_maxMapX);
+        // let mapy = basicRandom(_minMapY,_maxMapY);
+        // mapVar.push({xy:[],walls:[],places:[],warps:[],mapBoundX:mapx,mapBoundY:mapy});
+        // for(let x = 0; x < mapx; x++){
+        //     mapVar[i].xy.push([]);
+        //     for(let y = 0; y < mapy; y++){
+        //         mapVar[i].xy[x].push("X");
+        //     }
+        // }
         
     }
 }
@@ -1564,12 +1572,14 @@ function doCommands(wordListArray) {
         }
         else if(wordListArray[i].substr(0,10).toLowerCase() == "randchars "){
             randchars = true;
+            automaticAdd = true;
             numRandChars = parseInt(wordListArray[i].substring(10));
             wordListArray.splice(i,1);
             i--;
         }
         else if(wordListArray[i].substr(0,9).toLowerCase() == "randnums "){
             randchars = true;
+            automaticAdd = true;
             numRandChars = parseInt(wordListArray[i].substring(9));
             randCharList = randNumList;
             wordListArray.splice(i,1);
@@ -1621,8 +1631,8 @@ function doCommands(wordListArray) {
             wordListArray.splice(i,1);
             i--;
         }
-        else if(wordListArray[i].substr(0,9).toLowerCase() == "numrooms "){
-            numRooms = parseInt(wordListArray[i].substring(9));
+        else if(wordListArray[i].substr(0,9).toLowerCase() == "numstartingrooms "){
+            numStartingRooms = parseInt(wordListArray[i].substring(9));
             wordListArray.splice(i,1);
             i--;
         }
